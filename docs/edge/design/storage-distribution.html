@@ -1,0 +1,1284 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <meta name="description" content="Apache Ozone Documentation">
+
+    <title>Documentation for Apache Ozone</title>
+
+    
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    
+    <link href="../css/ozonedoc.css" rel="stylesheet">
+
+    
+    
+    <link href="../swagger-resources/swagger-ui.css" rel="stylesheet">
+
+    
+    <script>
+      var _paq = window._paq = window._paq || [];
+      
+
+       
+      _paq.push(['disableCookies']);
+      
+
+      _paq.push(['trackPageView']);
+      _paq.push(['enableLinkTracking']);
+      (function() {
+        var u="//analytics.apache.org/";
+        _paq.push(['setTrackerUrl', u+'matomo.php']);
+        _paq.push(['setSiteId', '34']);
+        var d=document, g=d.createElement('script'),
+s=d.getElementsByTagName('script')[0];
+        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+      })();
+    </script>
+    
+
+  </head>
+
+
+  <body>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#sidebar" aria-expanded="false" aria-controls="navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a href="../index.html" class="navbar-left ozone-logo">
+        <img src="../ozone-logo-small.png"/>
+      </a>
+      <a class="navbar-brand hidden-xs" href="../index.html">
+        Apache Ozone/HDDS Documentation
+      </a>
+      <a class="navbar-brand visible-xs-inline" href="#">Apache Ozone</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="https://github.com/apache/ozone">Source</a></li>
+        <li><a href="https://ozone.apache.org">Apache Ozone</a></li>
+        <li><a href="https://apache.org">ASF</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        
+<div class="col-sm-2 col-md-2 sidebar" id="sidebar">
+  <ul class="nav nav-sidebar">
+    
+    
+        
+            <li class="">
+                
+                   <a href="../index.html">
+                
+
+                    
+                    <span>An Introduction to Apache Ozone</span>
+                </a>
+            </li>
+        
+    
+        
+            <li class="">
+                <a href="../start/index.html">
+                    
+                    <span>Getting Started</span>
+                </a>
+                <ul class="nav">
+                    
+                        <li class="">
+                           
+                           <a href="../start/productiondeployment.html">Production Deployment</a>
+                           
+                        </li>
+                    
+                </ul>
+            </li>
+        
+    
+        
+            <li class="">
+                <a href="../concept/index.html">
+                    
+                    <span>Architecture</span>
+                </a>
+                <ul class="nav">
+                    
+                        <li class="">
+                           
+                           <a href="../concept/overview.html">Overview</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                               <a href="../concept/ozonemanager.html">
+                                 
+                                 <span>Ozone Manager</span>
+                               </a>
+                               <ul class="nav">
+                               
+                                  <li class="">
+                                     <a href="../concept/volumesbucketskeys.html">Volumes, Buckets, and Keys</a>
+                                  </li>
+                               
+                               </ul>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../concept/storagecontainermanager.html">Storage Container Manager</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../concept/containers.html">Containers</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../concept/datanodes.html">Datanodes</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                               <a href="../concept/ozones3gateway.html">
+                                 
+                                 <span>Ozone S3 Gateway</span>
+                               </a>
+                               <ul class="nav">
+                               
+                                  <li class="">
+                                     <a href="../concept/s3-gateway-load-balancing.html">S3 Gateway Load Balancing</a>
+                                  </li>
+                               
+                               </ul>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../concept/recon.html">Recon</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../concept/networkports.html">Network Ports</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../concept/comparison.html">Comparison with Other Storage Technologies</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../concept/rocksdb.html">RocksDB in Apache Ozone</a>
+                           
+                        </li>
+                    
+                </ul>
+            </li>
+        
+    
+        
+            <li class="">
+                <a href="../feature/index.html">
+                    
+                    <span>Features</span>
+                </a>
+                <ul class="nav">
+                    
+                        <li class="">
+                           
+                           <a href="../feature/decommission.html">Decommissioning</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/diskbalancer.html">DiskBalancer</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/snapshotdefragmentation.html">Improve Ozone Snapshot Scale with Snapshot Defragmentation</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/om-ha.html">OM High Availability</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/erasurecoding.html">Ozone Erasure Coding</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                               <a href="../feature/snapshot.html">
+                                 
+                                 <span>Ozone Snapshot</span>
+                               </a>
+                               <ul class="nav">
+                               
+                                  <li class="">
+                                     <a href="../feature/snapshot-configuration-properties.html">Snapshot Configuration Properties</a>
+                                  </li>
+                               
+                               </ul>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/scm-ha.html">SCM High Availability</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/streaming-write-pipeline.html">Streaming Write Pipeline</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/dn-merge-rocksdb.html">Merge Container RocksDB in DN</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/prefixfso.html">Prefix based File System Optimization</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/topology.html">Topology awareness</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/quota.html">Quota in Ozone</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/recon.html">Recon Server</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/observability.html">Observability</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/nonrolling-upgrade.html">Non-Rolling Upgrades and Downgrades</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                               <a href="../feature/s3-multi-tenancy.html">
+                                 
+                                 <span>S3 Multi-Tenancy</span>
+                               </a>
+                               <ul class="nav">
+                               
+                                  <li class="">
+                                     <a href="../feature/s3-multi-tenancy-setup.html">Setup</a>
+                                  </li>
+                               
+                                  <li class="">
+                                     <a href="../feature/s3-tenant-commands.html">Tenant commands</a>
+                                  </li>
+                               
+                                  <li class="">
+                                     <a href="../feature/s3-multi-tenancy-access-control.html">Access Control</a>
+                                  </li>
+                               
+                               </ul>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/reconfigurability.html">Dynamic Property Reload</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/containerbalancer.html">Container Balancer</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/maintenance.html">Maintenance Mode</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/multi-raft-support.html">Multi-Raft Support in Ozone</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../feature/trash.html">Trash</a>
+                           
+                        </li>
+                    
+                </ul>
+            </li>
+        
+    
+        
+            <li class="">
+                <a href="../integration/index.html">
+                    
+                    <span>Application Integrations</span>
+                </a>
+                <ul class="nav">
+                    
+                        <li class="">
+                           
+                           <a href="../integration/distcp.html">Hadoop DistCp</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../integration/hive.html">Hive</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../integration/impala.html">Impala</a>
+                           
+                        </li>
+                    
+                </ul>
+            </li>
+        
+    
+        
+            <li class="">
+                <a href="../interface/index.html">
+                    
+                    <span>Client Interfaces</span>
+                </a>
+                <ul class="nav">
+                    
+                        <li class="">
+                           
+                           <a href="../interface/ofs.html">Ofs (Hadoop compatible)</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../interface/o3fs.html">O3fs (Hadoop compatible)</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                               <a href="../interface/s3.html">
+                                 
+                                 <span>S3 Protocol</span>
+                               </a>
+                               <ul class="nav">
+                               
+                                  <li class="">
+                                     <a href="../interface/cyberduckozones3.html">Accessing Ozone S3 via CyberDuck</a>
+                                  </li>
+                               
+                               </ul>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../interface/cli.html">Command Line Interface</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../interface/reconapi.html">Recon API</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../interface/javaapi.html">Java API</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../interface/python.html">Accessing Apache Ozone from Python</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../interface/csi.html">CSI Protocol</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../interface/httpfs.html">HttpFS Gateway</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../interface/native-cpp.html">Native C/C&#43;&#43; Client Access to Ozone</a>
+                           
+                        </li>
+                    
+                </ul>
+            </li>
+        
+    
+        
+            <li class="">
+                <a href="../security/index.html">
+                    
+                    <span>Security</span>
+                </a>
+                <ul class="nav">
+                    
+                        <li class="">
+                           
+                           <a href="../security/secureozone.html">Securing Ozone</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../security/securingtde.html">Transparent Data Encryption</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../security/gdpr.html">GDPR in Ozone</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../security/securingdatanodes.html">Securing Datanodes</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../security/securingozonehttp.html">Securing HTTP</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../security/securings3.html">Securing S3</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../security/securityacls.html">Ozone ACLs</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../security/protect-in-transit-traffic.html">Protect In-Transit Traffic</a>
+                           
+                        </li>
+                    
+                        <li class="">
+                           
+                           <a href="../security/securitywithranger.html">Apache Ranger</a>
+                           
+                        </li>
+                    
+                </ul>
+            </li>
+        
+    
+        
+            <li class="">
+                
+                   <a href="../tools/index.html">
+                
+
+                    
+                    <span>Tools</span>
+                </a>
+            </li>
+        
+    
+        
+            <li class="">
+                
+                   <a href="../recipe/index.html">
+                
+
+                    
+                    <span>Recipes</span>
+                </a>
+            </li>
+        
+    
+        
+            <li class="">
+                
+                   <a href="../troubleshooting/index.html">
+                
+
+                    
+                    <span>Troubleshooting</span>
+                </a>
+            </li>
+        
+    
+    <li><a href="../design.html"><span><b>Design docs</b></span></a></li>
+    <li class="visible-xs"><a href="#">References</a>
+    <ul class="nav">
+        <li><a href="https://github.com/apache/ozone"><span class="glyphicon glyphicon-new-window" aria-hidden="true"></span> Source</a></li>
+        <li><a href="https://ozone.apache.org"><span class="glyphicon glyphicon-new-window" aria-hidden="true"></span> Apache Ozone</a></li>
+        <li><a href="https://apache.org"><span class="glyphicon glyphicon-new-window" aria-hidden="true"></span> ASF</a></li>
+    </ul></li>
+  </ul>
+
+</div>
+
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main-content">
+            <div class="col-md-9">
+                <h1><a href="https://issues.apache.org/jira/browse/HDDS-13177">[HDDS-13177]</a> Storage Capacity Distribution Design (Under Review) </h1>
+                <div><i>Authors: Priyesh Karatha</i><div class="pull-right">2025-08-05</div></div>
+                <p>&nbsp</p>
+
+                <div class="panel panel-success">
+                    <div class="panel-heading">Summary</div>
+                    <div class="panel-body">
+                        Proposal for introducing a comprehensive storage distribution dashboard in Recon.
+                    </div>
+                </div>
+
+              <!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+  either express or implied. See the License for the specific
+  language governing permissions and limitations under the License.
+-->
+<h1 id="abstract">Abstract</h1>
+<p>Ozone currently lacks a unified interface to monitor and analyze storage distribution across its cluster components. This makes it difficult to:</p>
+<ul>
+<li>Understand data distribution across the cluster</li>
+<li>Debug storage reclamation issues</li>
+<li>Monitor pending deletion progress</li>
+<li>Analyze utilization patterns</li>
+<li>Identify potential bottlenecks and imbalances</li>
+</ul>
+<p>This proposal introduces a comprehensive <strong>Storage Capacity Distribution Dashboard</strong> in Recon to address these challenges.
+This initiative significantly enhances operational insight, capacity planning accuracy, and system observability in large-scale Ozone deployments.</p>
+<h2 id="approach-1-recon-based">Approach 1: Recon-based</h2>
+<h3 id="architectural-overview">Architectural Overview</h3>
+<p>The dashboard operates as an extension to <strong>Recon</strong>, leveraging existing telemetry from:</p>
+<ul>
+<li><strong>Ozone Manager (OM)</strong> - namespace-level and key-level metadata.</li>
+<li><strong>Storage Container Manager (SCM)</strong> - container, block, and replication metrics.</li>
+<li><strong>DataNodes (DNs)</strong> - raw storage usage and pending deletion data.</li>
+</ul>
+<p>All metrics are aggregated, and exposed through a <strong>RESTful API (/storagedistribution)</strong> for recon dashboard.</p>
+<p>
+
+<img src="storage-distribution-design.jpg" alt=''  class="img-responsive" /></p>
+<h3 id="data-flow-summary">Data Flow Summary</h3>
+<ul>
+<li>OM → Recon
+<ul>
+<li>Periodic synchronization happens between OM db to Recon.</li>
+</ul>
+</li>
+<li>OM -&gt; SCM
+<ul>
+<li>Block deletion request sent by OM to SCM carries block size and replicated size.</li>
+</ul>
+</li>
+<li>SCM → Recon
+<ul>
+<li>SCM aggregates the blocks in the block deletion request into DeletedBlocksTransaction with aggregated block size and replicated size, persisted into DB.</li>
+<li>SCM maintains and updates a deletion transaction summary for newly created/deleted transactions. Summary is exposed through metrics, API, and also persisted.</li>
+<li>Recon gets the deletion transaction summary using SCM client whenever required.</li>
+</ul>
+</li>
+<li>SCM → Datanode
+<ul>
+<li>Block deletion transaction sent by SCM to DN carries block size.</li>
+</ul>
+</li>
+<li>DataNode → Recon
+<ul>
+<li>Exposes TotalPendingDeletionBytes via JMX through BlockDeletingService.</li>
+<li>Recon fetches this data for node-level pending deletion tracking.</li>
+</ul>
+</li>
+<li>Recon
+<ul>
+<li>Consolidates all component-level data.</li>
+<li>Computes global storage, namespace usage, and pending deletion metrics.</li>
+<li>Exposes results via RestFull API /storagedistribution.</li>
+</ul>
+</li>
+</ul>
+<h3 id="recon-api-design">Recon API Design</h3>
+<h4 id="1-get-storage-distribution-information">1. Get Storage Distribution Information</h4>
+<p><strong>Endpoint:</strong> <code>GET /storageDistribution</code></p>
+<p><strong>Description:</strong> Retrieves comprehensive storage metrics including global capacity, namespace usage, and per-DataNode storage breakdown.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Responses:</strong> 200 OK</p>
+<p><strong>Response Structure:</strong></p>
+<table>
+  <thead>
+      <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>globalStorage</td>
+          <td>Object</td>
+          <td>Overall storage capacity metrics.</td>
+      </tr>
+      <tr>
+          <td>globalNamespace</td>
+          <td>Object</td>
+          <td>Overall namespace (key) usage metrics.</td>
+      </tr>
+      <tr>
+          <td>usedSpaceBreakdown</td>
+          <td>Object</td>
+          <td>Detailed breakdown of used space.</td>
+      </tr>
+      <tr>
+          <td>dataNodeUsage</td>
+          <td>Array of Objects</td>
+          <td>Per-DataNode storage usage.</td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Response Objects:</strong></p>
+<h5 id="globalstorage-object">globalStorage Object</h5>
+<table>
+  <thead>
+      <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>totalFileSystemCapacity</td>
+          <td>Long</td>
+          <td>Total raw capacity of filesystem across all DataNodes in bytes.</td>
+      </tr>
+      <tr>
+          <td>totalReservedSpace</td>
+          <td>Long</td>
+          <td>Total space reserved in filesystem which cannot be used by ozone</td>
+      </tr>
+      <tr>
+          <td>totalOzoneCapacity</td>
+          <td>Long</td>
+          <td>Total raw capacity across all DataNodes in bytes.</td>
+      </tr>
+      <tr>
+          <td>totalOzoneUsedSpace</td>
+          <td>Long</td>
+          <td>Total used space across all DataNodes in bytes.</td>
+      </tr>
+      <tr>
+          <td>totalOzoneFreeSpace</td>
+          <td>Long</td>
+          <td>Total free space across all DataNodes in bytes.</td>
+      </tr>
+      <tr>
+          <td>totalOzoneCommittedSpace</td>
+          <td>Long</td>
+          <td>Pre-allocated space for open containers.</td>
+      </tr>
+      <tr>
+          <td>totalOzoneMinimumFreeSpace</td>
+          <td>Long</td>
+          <td>Sum of all the minimumFreeSpace configured across all DataNodes in bytes.</td>
+      </tr>
+  </tbody>
+</table>
+<h5 id="globalnamespace-object">globalNamespace Object</h5>
+<table>
+  <thead>
+      <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>totalUsedSpace</td>
+          <td>Long</td>
+          <td>Total used space for namespace objects (keys) in bytes.</td>
+      </tr>
+      <tr>
+          <td>totalKeys</td>
+          <td>Long</td>
+          <td>Total number of keys in the namespace.</td>
+      </tr>
+  </tbody>
+</table>
+<h5 id="usedspacebreakdown-object">usedSpaceBreakdown Object</h5>
+<table>
+  <thead>
+      <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>openKeyBytes</td>
+          <td>Object</td>
+          <td>Bytes currently held by open keys (not yet committed).</td>
+      </tr>
+      <tr>
+          <td>finalizedKeyBytes</td>
+          <td>Long</td>
+          <td>Total bytes in keys that have completed writing.</td>
+      </tr>
+  </tbody>
+</table>
+<h5 id="openkeybytes-object">openKeyBytes Object</h5>
+<table>
+  <thead>
+      <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>totalOpenKeyBytes</td>
+          <td>Long</td>
+          <td>Bytes currently held by open keys (not yet committed).</td>
+      </tr>
+      <tr>
+          <td>openKeyAndFileBytes</td>
+          <td>Long</td>
+          <td>Bytes currently held by open keys/files</td>
+      </tr>
+      <tr>
+          <td>multipartOpenKeyBytes</td>
+          <td>Long</td>
+          <td>Bytes currently held by open multipart keys</td>
+      </tr>
+  </tbody>
+</table>
+<h5 id="datanodeusage-array-per-datanode-metrics">dataNodeUsage Array (Per-DataNode Metrics)</h5>
+<p>Each object represents the storage metrics for a single DataNode.</p>
+<table>
+  <thead>
+      <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>datanodeUuid</td>
+          <td>String</td>
+          <td>Unique identifier for the DataNode</td>
+      </tr>
+      <tr>
+          <td>hostName</td>
+          <td>String</td>
+          <td>Hostname of the DataNode</td>
+      </tr>
+      <tr>
+          <td>capacity</td>
+          <td>Long</td>
+          <td>Ozone capacity of the DataNode in bytes.</td>
+      </tr>
+      <tr>
+          <td>used</td>
+          <td>Long</td>
+          <td>Ozone Used space on the DataNode in bytes.</td>
+      </tr>
+      <tr>
+          <td>remaining</td>
+          <td>Long</td>
+          <td>Remaining free space on the DataNode in bytes for Ozone.</td>
+      </tr>
+      <tr>
+          <td>committed</td>
+          <td>Long</td>
+          <td>Bytes pre allocated for the containers.</td>
+      </tr>
+      <tr>
+          <td>minimumFreeSpace</td>
+          <td>Long</td>
+          <td>Configured minimum free space in bytes.</td>
+      </tr>
+      <tr>
+          <td>reserved</td>
+          <td>Long</td>
+          <td>Configured reserved space in bytes, for non Ozone usage.</td>
+      </tr>
+      <tr>
+          <td>filesystemCapacity</td>
+          <td>Long</td>
+          <td>Total filesystem capacity of the DataNode in bytes</td>
+      </tr>
+      <tr>
+          <td>filesystemUsed</td>
+          <td>Long</td>
+          <td>Total used filesystem space of DataNode in bytes</td>
+      </tr>
+      <tr>
+          <td>filesystemAvailable</td>
+          <td>Long</td>
+          <td>Total available filesystem space of DataNode in bytes</td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Example Response:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;globalStorage&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;totalFileSystemCapacity&#34;</span> : <span style="color:#ae81ff">3242976157144</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;totalReservedSpace&#34;</span> : <span style="color:#ae81ff">102400</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;totalOzoneCapacity&#34;</span>: <span style="color:#ae81ff">3242976054744</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;totalOzoneUsedSpace&#34;</span>: <span style="color:#ae81ff">15744356352</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;totalOzoneFreeSpace&#34;</span>: <span style="color:#ae81ff">3002519420928</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;totalOzoneCommittedSpace&#34;</span>: <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;totalMinimumFreeSpace&#34;</span> : <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>  },
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;globalNamespace&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;totalUsedSpace&#34;</span>: <span style="color:#ae81ff">5242880000</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;totalKeys&#34;</span>: <span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span>  },
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;usedSpaceBreakdown&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;openKeysBytes&#34;</span>: {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;totalOpenKeyBytes&#34;</span> : <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;openKeyAndFileBytes&#34;</span> : <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;multipartOpenKeyBytes&#34;</span> : <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;finalizedKeyBytes&#34;</span>: <span style="color:#ae81ff">5242880000</span>
+</span></span><span style="display:flex;"><span>  },
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;dataNodeUsage&#34;</span>: [
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;datanodeUuid&#34;</span>: <span style="color:#e6db74">&#34;31300d56-f6f8-46f4-9d1e-862ac82066f8&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;hostName&#34;</span>: <span style="color:#e6db74">&#34;ozone-datanode-2.ozone_default&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;capacity&#34;</span>: <span style="color:#ae81ff">1080992018248</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;used&#34;</span>: <span style="color:#ae81ff">5248118784</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;remaining&#34;</span>: <span style="color:#ae81ff">1000839806976</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;committed&#34;</span>: <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;minimumFreeSpace&#34;</span>: <span style="color:#ae81ff">1080992000</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;reserved&#34;</span>: <span style="color:#ae81ff">108110008</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;filesystemCapacity&#34;</span> : <span style="color:#ae81ff">1081100128256</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;filesystemUsed&#34;</span> : <span style="color:#ae81ff">80260321280</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;filesystemAvailable&#34;</span> : <span style="color:#ae81ff">1000839806976</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;datanodeUuid&#34;</span>: <span style="color:#e6db74">&#34;d211a430-6363-4882-a4b5-5d3275652e5a&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;hostName&#34;</span>: <span style="color:#e6db74">&#34;ozone-datanode-3.ozone_default&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;capacity&#34;</span>: <span style="color:#ae81ff">1080992018248</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;used&#34;</span>: <span style="color:#ae81ff">5248118784</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;remaining&#34;</span>: <span style="color:#ae81ff">1000839806976</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;committed&#34;</span>: <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;minimumFreeSpace&#34;</span>: <span style="color:#ae81ff">1080992000</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;reserved&#34;</span>: <span style="color:#ae81ff">108110008</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;filesystemCapacity&#34;</span> : <span style="color:#ae81ff">1081100128256</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;filesystemUsed&#34;</span> : <span style="color:#ae81ff">80260321280</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;filesystemAvailable&#34;</span> : <span style="color:#ae81ff">1000839806976</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;datanodeUuid&#34;</span>: <span style="color:#e6db74">&#34;70fd6c8c-b3f3-43ad-83ac-4e0dc6e9d74d&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;hostName&#34;</span>: <span style="color:#e6db74">&#34;ozone-datanode-1.ozone_default&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;capacity&#34;</span>: <span style="color:#ae81ff">1080992018248</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;used&#34;</span>: <span style="color:#ae81ff">5248118784</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;remaining&#34;</span>: <span style="color:#ae81ff">1000839806976</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;committed&#34;</span>: <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;minimumFreeSpace&#34;</span>: <span style="color:#ae81ff">1080992000</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;reserved&#34;</span>: <span style="color:#ae81ff">108110008</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;filesystemCapacity&#34;</span> : <span style="color:#ae81ff">1081100128256</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;filesystemUsed&#34;</span> : <span style="color:#ae81ff">80260321280</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;filesystemAvailable&#34;</span> : <span style="color:#ae81ff">1000839806976</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  ]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h4 id="2-get-pending-deletion-bytes">2. Get Pending Deletion Bytes</h4>
+<p><strong>Endpoint:</strong> <code>GET /pendingDeletion</code></p>
+<p><strong>Description:</strong> Retrieves pending deletion metrics across different Ozone components (OM, SCM, and DataNodes).</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>component</code> (required): Component type - <code>om</code>, <code>scm</code>, or <code>dn</code></li>
+</ul>
+<p><strong>Responses:</strong></p>
+<ul>
+<li><strong>200 OK:</strong> Data is available or task is running</li>
+<li><strong>202 Accepted:</strong> No data available yet but task is in progress</li>
+</ul>
+<p><strong>Response Schemas by Component:</strong></p>
+<h5 id="a-ozone-manager-om---get-pendingdeletioncomponentom">a) Ozone Manager (OM) - <code>GET /pendingDeletion?component=om</code></h5>
+<table>
+  <thead>
+      <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>totalSize</td>
+          <td>Long</td>
+          <td>Total pending bytes across all items</td>
+      </tr>
+      <tr>
+          <td>pendingDirectorySize</td>
+          <td>Long</td>
+          <td>Total pending bytes for directories</td>
+      </tr>
+      <tr>
+          <td>pendingKeySize</td>
+          <td>Long</td>
+          <td>Total pending bytes for keys</td>
+      </tr>
+  </tbody>
+</table>
+<p>Example:-</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;totalSize&#34;</span>: <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;pendingDirectorySize&#34;</span>: <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;pendingKeySize&#34;</span>: <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h5 id="b-storage-container-manager-scm---get-pendingdeletioncomponentscm">b) Storage Container Manager (SCM) - <code>GET /pendingDeletion?component=scm</code></h5>
+<table>
+  <thead>
+      <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>totalBlocksize</td>
+          <td>Long</td>
+          <td>Total pending bytes for unreplicated blocks</td>
+      </tr>
+      <tr>
+          <td>totalReplicatedBlockSize</td>
+          <td>Long</td>
+          <td>Total pending bytes for replicated blocks</td>
+      </tr>
+      <tr>
+          <td>totalBlocksCount</td>
+          <td>Long</td>
+          <td>Total number of pending blocks</td>
+      </tr>
+  </tbody>
+</table>
+<p>Example:-</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;totalBlocksize&#34;</span>: <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;totalReplicatedBlockSize&#34;</span>: <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;totalBlocksCount&#34;</span>: <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h5 id="c-datanodes-dn---get-pendingdeletioncomponentdn">c) DataNodes (DN) - <code>GET /pendingDeletion?component=dn</code></h5>
+<table>
+  <thead>
+      <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>status</td>
+          <td>String</td>
+          <td>Status of the background metrics collection task</td>
+      </tr>
+      <tr>
+          <td>totalPendingDeletion</td>
+          <td>Long</td>
+          <td>Sum of pending deletion bytes across all DataNodes</td>
+      </tr>
+      <tr>
+          <td>pendingDeletionPerDataNode</td>
+          <td>Array of Objects</td>
+          <td>Per-DataNode pending deletion metrics</td>
+      </tr>
+      <tr>
+          <td>totalNodesQueried</td>
+          <td>Int</td>
+          <td>Total number of JMx Queries</td>
+      </tr>
+      <tr>
+          <td>totalNodeQueriesFailed</td>
+          <td>Int</td>
+          <td>Number of Jmx queries failed</td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>pendingDeletionPerDataNode Array (Per-DataNode Metrics):</strong>
+Each object contains pending deletion information for a single DataNode.</p>
+<table>
+  <thead>
+      <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>hostName</td>
+          <td>String</td>
+          <td>Hostname of the DataNode</td>
+      </tr>
+      <tr>
+          <td>datanodeUuid</td>
+          <td>String</td>
+          <td>Unique identifier for the DataNode</td>
+      </tr>
+      <tr>
+          <td>pendingBlockSize</td>
+          <td>Long</td>
+          <td>Total pending bytes on this DataNode</td>
+      </tr>
+  </tbody>
+</table>
+<p>Example:-</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;status&#34;</span>: <span style="color:#e6db74">&#34;FINISHED&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;totalPendingDeletionSize&#34;</span>: <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;pendingDeletionPerDataNode&#34;</span>: [
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;hostName&#34;</span>: <span style="color:#e6db74">&#34;ozone-datanode-2.ozone_default&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;datanodeUuid&#34;</span>: <span style="color:#e6db74">&#34;002d69fa-ce3e-4d66-bd23-ac235f599fc6&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;pendingBlockSize&#34;</span>: <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;hostName&#34;</span>: <span style="color:#e6db74">&#34;ozone-datanode-3.ozone_default&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;datanodeUuid&#34;</span>: <span style="color:#e6db74">&#34;d5946743-3496-4f6d-834f-374cebae2159&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;pendingBlockSize&#34;</span>: <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;hostName&#34;</span>: <span style="color:#e6db74">&#34;ozone-datanode-1.ozone_default&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;datanodeUuid&#34;</span>: <span style="color:#e6db74">&#34;35e850c7-9824-4098-8818-7e95f4ccce0e&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;pendingBlockSize&#34;</span>: <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  ],
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;totalNodesQueried&#34;</span>: <span style="color:#ae81ff">3</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;totalNodeQueriesFailed&#34;</span>: <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="backend-implementation">Backend Implementation</h3>
+<p>The backend implementation will involve collecting data from various Ozone components, and also we need to add few code changes to get pending deletion and replicated sizes in different components.</p>
+<h4 id="ozone-manager-om">Ozone Manager (OM)</h4>
+<p>Ozone Manager will be the key data source for most of the data. But SCM doesn&rsquo;t have the data and we need to include block size information in Deleted Block and pass it to SCM</p>
+<p>Previously, the key block deletion requests sent from the Ozone Manager (OM) to the Storage Container Manager (SCM) only contained BlockIDs, lacking any size information. Consequently, the SCM was unable to accurately monitor the total space designated for cleanup and pending reclamation.</p>
+<p>The new implementation will include the block size and replicated size in the key block deletion requests sent out by OM to SCM, so that SCM will know the size of each block under request to delete.</p>
+<h4 id="storage-container-manager-scm">Storage Container Manager (SCM)</h4>
+<h5 id="persist-block-size-in-delete-transactions-scm">Persist Block Size in Delete Transactions (SCM)</h5>
+<p>SCM currently tracks pending deleted blocks by transaction metadata but lacks reliable, aggregated visibility into <strong>how much space</strong> (raw and replicated) those blocks occupy while they await deletion. This limits operational insights (metrics/CLI) and complicates capacity-related decisions. The design introduces block size persistence at the transaction level and an SCM-side summary to expose accurate, real-time totals.</p>
+<h5 id="goals">Goals</h5>
+<ul>
+<li>Persist <strong>total raw size</strong> and <strong>total replicated size</strong> for each DeletedBlocksTransaction.<a href="https://github.com/apache/ozone/pull/8845"></a></li>
+<li>Maintain an SCM-side <strong>DeletedBlocksTransactionSummary</strong> with totals for: transaction count, block count, total size, and total replicated size.</li>
+<li>Expose the summary via <strong>metrics</strong>, <strong>API</strong> and <strong>CLI</strong> for operators.</li>
+<li>Provide a safe <strong>upgrade path</strong> so legacy transactions do not pollute the new counters.</li>
+</ul>
+<h4 id="data-node-dns">Data Node (DNs)</h4>
+<p>To enhance storage visibility, a new metric will be introduced: the total bytes consumed by blocks pending deletion. Previously, only the count of blocks awaiting deletion was tracked, providing an incomplete understanding of reclaimable disk space. This change aims to offer a more accurate and comprehensive view of storage in the process of being freed.</p>
+<p>The core idea involves:</p>
+<ul>
+<li><strong>Measuring Deleted Data Size:</strong> The system will now measure the total size in bytes of deleted items, rather than just counting them. Whenever a block deletion request is received at DN, it will increment corresponding counter, and also it will be persisted under container info. Once deletion is completed at DN side the same size will decrement. This keeps the pending deletion value consistent.</li>
+<li><strong>Integrating into Existing Systems:</strong> This new size measurement will be incorporated into the current data deletion service and container data structures.</li>
+<li><strong>Calculating Size During Deletion:</strong> In DeleteBlockCommandHandler, whenever a delete request is received, the pendingBytes from the transaction are added to the existing pendingBytes of the corresponding ContainerData, and this updated value is persisted.
+Once the deletion process completes, the same amount is decremented from the container’s pendingBytes.
+Since BlockDeletionService already iterates over all containers while running, it calculates the total pendingBytes per datanode during this iteration and updates the corresponding metrics.</li>
+</ul>
+<p>DataNodes currently provide storage reports, which Recon consumes regularly. However, these reports lack information about pending deletion bytes. To address this, we propose publishing TotalPendingBytes as a metric via BlockDeletingService, which Recon can then consume via JMX. This approach is more reliable and performs better than alternative solutions, such as including pending deletion information in the storage report.</p>
+<h4 id="recon">Recon</h4>
+<p>A new REST API endpoint, <code>/storagedistribution</code>, has been introduced to provide a consolidated view of storage distribution across the cluster. This endpoint offers various storage-related insights, including used capacity, pending deletions, and overall data distribution within Ozone components.<strong>Key Functionalities</strong></p>
+<p>Recon exposes consolidated metrics regarding storage usage and distribution, drawing data from the following sources:</p>
+<ul>
+<li><strong>OMDBInsightEndpoint:</strong> Retrieves Ozone Manager (OM)-level data, such as bucket-level usage, namespace size, and used capacity.</li>
+<li><strong>SCMClient:</strong> Fetches pending deletion metrics from the Storage Container Manager (SCM). This includes block-level metadata like size and replicated size, crucial for accurate estimation of reclaimable space.</li>
+<li><strong>Datanode Storage Reports and Metrics:</strong> Gathers current storage usage statistics from individual datanodes. This information helps determine used versus available capacity and facilitates the classification of data distribution based on node-wise storage usage.</li>
+</ul>
+<p>The pending deletion bytes are calculated and updated within the BlockDeletionService metrics, which are then exposed via JMX. This allows direct access to these metrics by monitoring tools. While this approach introduces a dependency on JMX (a minor concern in some deployments), its primary advantage is avoiding unnecessary data transfer to SCM and the associated processing overhead in the Datanode when iterating and calculating pending deletions from the container data list, as would be required with the Storage Report approach.</p>
+<h3 id="new-hdds-layout-and-upgrade">New HDDS Layout and Upgrade</h3>
+<p>A new HDDS layout feature, STORAGE_SPACE_DISTRIBUTION, has been introduced to handle upgrade and downgrade scenarios correctly and ensure accurate persistence of pending deletion metrics.</p>
+<h4 id="why-a-new-layout-feature-is-needed">Why a New Layout Feature Is Needed</h4>
+<p>Although rolling upgrades are not supported in Ozone (meaning OM and SCM should never run different versions simultaneously), SCM and Datanodes may persist aggregated size metrics in their databases during the upgrade process.
+If these metrics are written before the cluster is finalized, and later the cluster is downgraded and re-upgraded, the old values can become stale or inaccurate since old code won&rsquo;t update them correctly.</p>
+<p>To prevent such inaccuracies, SCM and DNs must only start persisting the aggregated pending deletion data once the layout feature is finalized.</p>
+<h4 id="behavior-before-storage_space_distribution-finalization">Behavior Before STORAGE_SPACE_DISTRIBUTION Finalization</h4>
+<ul>
+<li>SCM does not collect or expose DeletedBlocksTransactionSummary.</li>
+<li>DNs do not report TotalPendingBytes.</li>
+<li>Recon must handle the case where SCM and DN do not expose storage distribution data.</li>
+</ul>
+<h4 id="behavior-after-storage_space_distribution-finalization">Behavior After STORAGE_SPACE_DISTRIBUTION Finalization</h4>
+<ul>
+<li>SCM aggregates block sizes for new transactions, updates DeletedBlocksTransactionSummary, and exposes these metrics.</li>
+<li>DNs handle both legacy and new transactions, calculate pending deletion bytes for new ones, and report them.</li>
+<li>The persisted counters in SCM and DN reflect only data deleted after finalization, ensuring accuracy even across upgrade/downgrade cycles.</li>
+</ul>
+<h4 id="known-limitations">Known Limitations</h4>
+<p>For an existing Ozone cluster updating, if there are existing pending deletion transactions in SCM and DN, these transactions will not be covered in the new data/metrics exposed by SCM and DN.
+So the data shown by Recon UI can vary a lot from the real total pending deletion size. The gap will reduce gradually after existing old transactions are executed and finished.</p>
+<h2 id="approach-2-cli-based-not-proceeding">Approach 2: CLI-based (Not Proceeding)</h2>
+<p>A CLI-based approach was evaluated to compute detailed usage and pending deletion breakdown by analyzing offline OM and SCM database checkpoints and querying DataNodes.
+While it offers precise, up-to-date results and independence from Recon, it introduces significant operational overhead.</p>
+<p>This approach requires generating and processing large metadata snapshots, which can take hours in large-scale clusters.
+Given its complexity, dependency on manual execution, and high resource consumption, we have chosen not to proceed with the CLI-based solution and instead focus on enhancing Recon for better usability and integration.</p>
+<h2 id="metrics-exposure-and-time-series-tracking">Metrics Exposure and Time-Series Tracking</h2>
+<p>While Recon provides a point-in-time view of pending deletions and storage distribution, it is equally important to track these metrics over time to understand trends and validate reclamation progress.<br>
+To enable this, components should expose metrics that can be scraped by Prometheus and visualized in Grafana.</p>
+<h3 id="component-wise-metrics">Component-wise Metrics</h3>
+<ul>
+<li>
+<p><strong>Ozone Manager (OM)</strong></p>
+<ul>
+<li>Recon has already methods that are available to calculate the following information.
+<ul>
+<li>open key used space</li>
+<li>committed key used space</li>
+<li>pending deletion</li>
+</ul>
+</li>
+<li>In every OM db syncing, we can update these metrics values.</li>
+</ul>
+</li>
+<li>
+<p><strong>Storage Container Manager (SCM)</strong></p>
+<ul>
+<li>The DeletedBlockLogStateManager is enhanced to aggregate these block sizes in-memory, providing a DeletedBlocksTransactionSummary that includes total transaction count, total block count, total block size, and total replicated block size for pending deletions.</li>
+<li>This summary is rebuilt from persisted transaction data upon SCM startup or leader election.</li>
+<li>New metrics are introduced in ScmBlockDeletingServiceMetrics to expose the aggregated deletion statistics (transaction count, block count, total size, total replicated size). This provides better operational visibility into the SCM&rsquo;s block deletion queue.</li>
+</ul>
+</li>
+<li>
+<p><strong>DataNodes (DN)</strong></p>
+<ul>
+<li>Pending deletion bytes per node. This can be exposed as metrics in BlockDeletingService of DataNode</li>
+<li>Pending deletion count per node. This can be exposed as metrics in BlockDeletingService of DataNode</li>
+</ul>
+</li>
+</ul>
+<h3 id="dashboard">Dashboard</h3>
+<ul>
+<li><strong>Recon UI</strong> → Point-in-time snapshot for immediate debugging</li>
+<li><strong>Grafana</strong> → Time-series visualization of trends such as:
+<ul>
+<li>Pending deletion backlog reduction</li>
+<li>Growth of open key space</li>
+<li>Utilization vs reclamation rates over time</li>
+</ul>
+</li>
+</ul>
+<p>By combining both, operators gain:</p>
+<ul>
+<li><strong>Real-time visibility</strong> (via Recon)</li>
+<li><strong>Historical context</strong> (via Grafana)</li>
+</ul>
+<h1 id="summary">Summary</h1>
+<p>The proposed dashboard improves visibility into cluster storage dynamics, providing deeper insights for effective debugging and informed decision-making.<br>
+Recon is the ideal place to host the point-in-time overview, while exposing metrics enables Prometheus and Grafana to track long-term trends.<br>
+Together, these complementary approaches give operators a unified and powerful view of both current cluster state and historical storage patterns.</p>
+
+            </div>
+
+        </div>
+      </div>
+    </div>
+
+
+
+<footer class="footer">
+  <div class="container">
+    <span class="small text-muted">
+      Version: 2.2.0-SNAPSHOT, Last Modified: February 24, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/e8ef91ab2dc6152ad703289b3123d75af20186b5">e8ef91ab2d</a>
+    </span>
+  </div>
+</footer>
+
+
+
+<script src="../js/jquery-3.5.1.min.js"></script>
+<script src="../js/ozonedoc.js"></script>
+<script src="../js/bootstrap.min.js"></script>
+
+
+  </body>
+</html>

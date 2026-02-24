@@ -554,6 +554,13 @@
       <description>Design for the OM bootstrapping process that is snapshot aware</description>
     </item>
     <item>
+      <title>Storage Capacity Distribution Design</title>
+      <link>/design/storage-distribution.html</link>
+      <pubDate>Tue, 05 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>/design/storage-distribution.html</guid>
+      <description>Proposal for introducing a comprehensive storage distribution dashboard in Recon.</description>
+    </item>
+    <item>
       <title>Staged Reprocessing for Recon Task Data During Full Snapshot Recovery</title>
       <link>/concept/hdds-13515-design-document.html</link>
       <pubDate>Wed, 30 Jul 2025 00:00:00 +0000</pubDate>
