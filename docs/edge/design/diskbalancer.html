@@ -704,7 +704,14 @@ atomically moved to the <strong>final destination</strong> directory of D2 as <c
        (1)
         |
 D2      ----&gt; Temp C1-CLOSED  --- (2) ---&gt; Temp C1-RECOVERING --- (3) ---&gt; C1-RECOVERING --- (4) ---&gt; C1-CLOSED
-</code></pre><h2 id="diskbalancing-policies">DiskBalancing Policies</h2>
+</code></pre><h3 id="lazy-deletion-of-source-container-replica">Lazy Deletion of Source Container Replica</h3>
+<p>The source container on D1 is <strong>not</strong> deleted immediately after the move completes. Instead, it is scheduled for deletion after a configurable delay using config <code>hdds.datanode.disk.balancer.replica.deletion.delay</code>, <strong>default: 5 minutes</strong>.</p>
+<p><strong>Rationale:</strong> When a container has only one replica and that replica has an in-flight read operation, the read thread may still hold a reference to the old container at the source path.
+If the DiskBalancer deletes the old container immediately after the move, the in-flight read would fail because the container data is now at the new path. The lazy deletion provides a
+grace period for in-flight reads to complete before the old container is removed, avoiding immediate read failures.</p>
+<p><strong>Note:</strong> Because of this lazy deletion, the disk utilization of the source volume will not decrease immediately after a container move or after the DiskBalancer is stopped. The freed space
+and balanced state will be visible only after the configured delay, when the source container replicas are actually deleted.</p>
+<h2 id="diskbalancing-policies">DiskBalancing Policies</h2>
 <p>By default, the DiskBalancer uses specific policies to decide which disks to balance and which containers to move. These
 are configurable, but the default implementations provide robust and safe behavior.</p>
 <ul>
@@ -820,7 +827,7 @@ into the balancer&rsquo;s activity, progress, and overall health.</p>
 <footer class="footer">
   <div class="container">
     <span class="small text-muted">
-      Version: 2.2.0-SNAPSHOT, Last Modified: December 3, 2025 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/5a1997fcb6657770ed4e61770caf7c8951e2d475">5a1997fcb6</a>
+      Version: 2.2.0-SNAPSHOT, Last Modified: March 6, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/515869dccc6ebe8ac2eb625bdefc043cdb17816f">515869dccc</a>
     </span>
   </div>
 </footer>

@@ -682,6 +682,11 @@ s=d.getElementsByTagName('script')[0];
           <td>如果为真，则一旦磁盘被视为平衡（即所有卷密度都在阈值内），DiskBalancer 将自动停止其平衡活动。</td>
       </tr>
       <tr>
+          <td><code>hdds.datanode.disk.balancer.replica.deletion.delay</code></td>
+          <td><code>5m</code></td>
+          <td>容器成功从源卷移动到目标卷后，源容器副本被删除前的延迟时间。这种延迟删除机制旨在避免旧副本的即时删除导致持有旧容器副本的线程数据读取失败。单位：ns、ms、s、m、h、d。</td>
+      </tr>
+      <tr>
           <td><code>hdds.datanode.disk.balancer.volume.choosing.policy</code></td>
           <td><code>org.apache.hadoop.ozone.container.diskbalancer.policy.DefaultVolumeChoosingPolicy</code></td>
           <td>用于选择平衡的源卷和目标卷的策略类。</td>
@@ -722,7 +727,7 @@ s=d.getElementsByTagName('script')[0];
 <footer class="footer">
   <div class="container">
     <span class="small text-muted">
-      Version: 2.2.0-SNAPSHOT, Last Modified: December 31, 2025 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/fc16787c351dce867a1d094e5440a8bcaadd33c9">fc16787c35</a>
+      Version: 2.2.0-SNAPSHOT, Last Modified: March 6, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/515869dccc6ebe8ac2eb625bdefc043cdb17816f">515869dccc</a>
     </span>
   </div>
 </footer>
