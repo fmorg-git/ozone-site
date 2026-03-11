@@ -730,7 +730,7 @@
                 />
   </url><url>
     <loc>/design/index.html</loc>
-    <lastmod>2026-03-06T12:20:56+05:30</lastmod>
+    <lastmod>2026-03-10T19:53:05+05:30</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="zh"
@@ -741,6 +741,9 @@
                 hreflang="en"
                 href="/design/index.html"
                 />
+  </url><url>
+    <loc>/design/mpu-gc-optimization.html</loc>
+    <lastmod>2026-03-10T19:53:05+05:30</lastmod>
   </url><url>
     <loc>/design/s3-conditional-requests.html</loc>
     <lastmod>2026-01-15T09:25:11+08:00</lastmod>
