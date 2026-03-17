@@ -687,14 +687,9 @@ s=d.getElementsByTagName('script')[0];
           <td>容器成功从源卷移动到目标卷后，源容器副本被删除前的延迟时间。这种延迟删除机制旨在避免旧副本的即时删除导致持有旧容器副本的线程数据读取失败。单位：ns、ms、s、m、h、d。</td>
       </tr>
       <tr>
-          <td><code>hdds.datanode.disk.balancer.volume.choosing.policy</code></td>
-          <td><code>org.apache.hadoop.ozone.container.diskbalancer.policy.DefaultVolumeChoosingPolicy</code></td>
-          <td>用于选择平衡的源卷和目标卷的策略类。</td>
-      </tr>
-      <tr>
-          <td><code>hdds.datanode.disk.balancer.container.choosing.policy</code></td>
+          <td><code>hdds.datanode.disk.balancer.volume.container.choosing.policy</code></td>
           <td><code>org.apache.hadoop.ozone.container.diskbalancer.policy.DefaultContainerChoosingPolicy</code></td>
-          <td>用于选择将哪些容器从源卷移动到目标卷的策略类。</td>
+          <td>用于选择源/目标卷以及要移动的容器的策略。</td>
       </tr>
       <tr>
           <td><code>hdds.datanode.disk.balancer.service.timeout</code></td>
@@ -727,7 +722,7 @@ s=d.getElementsByTagName('script')[0];
 <footer class="footer">
   <div class="container">
     <span class="small text-muted">
-      Version: 2.2.0-SNAPSHOT, Last Modified: March 6, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/515869dccc6ebe8ac2eb625bdefc043cdb17816f">515869dccc</a>
+      Version: 2.2.0-SNAPSHOT, Last Modified: March 17, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/020452e196bbd0de0d530f6b2291339bacc66213">020452e196</a>
     </span>
   </div>
 </footer>

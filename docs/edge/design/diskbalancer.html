@@ -715,19 +715,10 @@ and balanced state will be visible only after the configured delay, when the sou
 <p>By default, the DiskBalancer uses specific policies to decide which disks to balance and which containers to move. These
 are configurable, but the default implementations provide robust and safe behavior.</p>
 <ul>
-<li>
-<p><strong><code>DefaultVolumeChoosingPolicy</code></strong>: This is the default policy for selecting the source and destination volumes. It
-identifies the most over-utilized volume as the source and the most under-utilized volume as the destination by comparing
-each volume&rsquo;s utilization against the Datanode&rsquo;s average. The calculation is smart enough to account for data that is
-already in the process of being moved, ensuring it makes accurate decisions based on the future state of the volumes.</p>
-</li>
-<li>
-<p><strong><code>DefaultContainerChoosingPolicy</code></strong>: This is the default policy for selecting which container to move from a source
-volume. It iterates through the containers on the source disk and picks the first one that is in a <strong>CLOSED</strong> state
-and is not already being moved by another balancing operation. To optimize performance and avoid re-scanning the same
-containers repeatedly, it caches the list of containers for each volume which auto expires after one hour of its last
-used time or if the container iterator for that is invalidated on full utilisation.</p>
-</li>
+<li><strong><code>DefaultContainerChoosingPolicy</code></strong>: This is the default policy that consolidates both volume selection and container
+selection into a single operation. It identifies the most over-utilized volume as the source and the most under-utilized
+volume with sufficient space as the destination, then iterates through containers on the source to pick the first one
+that is in a <strong>CLOSED</strong> state and is not already being moved. It caches the list of containers for each volume which auto expires after one hour.</li>
 </ul>
 <h2 id="security-design">Security Design</h2>
 <p>DiskBalancer follows the same security model as other services:</p>
@@ -827,7 +818,7 @@ into the balancer&rsquo;s activity, progress, and overall health.</p>
 <footer class="footer">
   <div class="container">
     <span class="small text-muted">
-      Version: 2.2.0-SNAPSHOT, Last Modified: March 6, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/515869dccc6ebe8ac2eb625bdefc043cdb17816f">515869dccc</a>
+      Version: 2.2.0-SNAPSHOT, Last Modified: March 17, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/020452e196bbd0de0d530f6b2291339bacc66213">020452e196</a>
     </span>
   </div>
 </footer>
