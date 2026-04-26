@@ -597,7 +597,7 @@ s=d.getElementsByTagName('script')[0];
 
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main-content">
             <div class="col-md-9">
-                <h1><a href="https://issues.apache.org/jira/browse/HDDS-13117">[HDDS-13117]</a> S3 Conditional Requests (draft) </h1>
+                <h1><a href="https://issues.apache.org/jira/browse/HDDS-13117">[HDDS-13117]</a> S3 Conditional Requests (accepted) </h1>
                 <div><i>Authors: Chu Cheng Li</i><div class="pull-right">2025-11-20</div></div>
                 <p>&nbsp</p>
 
@@ -623,11 +623,18 @@ s=d.getElementsByTagName('script')[0];
 -->
 <h1 id="s3-conditional-requests-design">S3 Conditional Requests Design</h1>
 <h2 id="background">Background</h2>
-<p>AWS S3 supports conditional requests using HTTP conditional headers, enabling atomic operations, cache optimization, and preventing race conditions. This includes:</p>
+<p>AWS S3 supports conditional requests using HTTP conditional headers,
+enabling atomic operations, cache optimization, and preventing race
+conditions. This includes:</p>
 <ul>
-<li><strong>Conditional Writes</strong> (PutObject): <code>If-Match</code> and <code>If-None-Match</code> headers for atomic operations</li>
-<li><strong>Conditional Reads</strong> (GetObject, HeadObject): <code>If-Match</code>, <code>If-None-Match</code>, <code>If-Modified-Since</code>, <code>If-Unmodified-Since</code> for cache validation</li>
+<li><strong>Conditional Writes</strong> (PutObject, CompleteMultipartUpload):
+<code>If-Match</code> and <code>If-None-Match</code> headers for atomic operations</li>
+<li><strong>Conditional Reads</strong> (GetObject, HeadObject): <code>If-Match</code>,
+<code>If-None-Match</code>, <code>If-Modified-Since</code>, <code>If-Unmodified-Since</code> for cache
+validation</li>
 <li><strong>Conditional Copy</strong> (CopyObject): Conditions on both source and destination objects</li>
+<li><strong>Conditional Deletes</strong> (DeleteObject): <code>If-Match</code> for delete-if-exists
+and delete-if-unchanged semantics</li>
 </ul>
 <h3 id="current-state">Current State</h3>
 <ul>
@@ -642,6 +649,9 @@ s=d.getElementsByTagName('script')[0];
 <li><strong>Create-only semantics</strong>: Prevent accidental overwrites (<code>If-None-Match: *</code>)</li>
 <li><strong>Optimistic locking</strong>: Enable concurrent access with conflict detection</li>
 <li><strong>Leader election</strong>: Implement distributed coordination using S3 as backing store</li>
+<li><strong>Conditional multipart completion</strong>: Finalize uploaded MPU parts only
+when the current destination object still satisfies the caller&rsquo;s
+precondition</li>
 </ul>
 <h3 id="conditional-reads">Conditional Reads</h3>
 <ul>
@@ -654,39 +664,324 @@ s=d.getElementsByTagName('script')[0];
 <li><strong>Atomic copy operations</strong>: Copy only if source/destination meets specific conditions</li>
 <li><strong>Prevent overwrite</strong>: Copy only if destination doesn&rsquo;t exist</li>
 </ul>
+<h3 id="conditional-deletes">Conditional Deletes</h3>
+<ul>
+<li><strong>Delete-if-unchanged</strong>: Delete only when the caller still sees the
+expected object ETag</li>
+<li><strong>Delete-if-exists</strong>: Require the key to exist by sending
+<code>If-Match: *</code></li>
+<li><strong>Race prevention</strong>: Avoid deleting an object that was replaced by a
+concurrent writer</li>
+</ul>
 <h2 id="specification">Specification</h2>
 <h3 id="aws-s3-conditional-write-specification">AWS S3 Conditional Write Specification</h3>
-<h4 id="if-none-match-header">If-None-Match Header</h4>
-<pre tabindex="0"><code>If-None-Match: &#34;*&#34;
-</code></pre><ul>
-<li>Succeeds only if object does NOT exist</li>
-<li>Returns <code>412 Precondition Failed</code> if object exists</li>
-<li>Primary use case: Create-only semantics</li>
-</ul>
-<h4 id="if-match-header">If-Match Header</h4>
-<pre tabindex="0"><code>If-Match: &#34;&lt;etag&gt;&#34;
-</code></pre><ul>
-<li>Succeeds only if object EXISTS and ETag matches</li>
-<li>Returns <code>412 Precondition Failed</code> if object doesn&rsquo;t exist or ETag mismatches</li>
-<li>Primary use case: Atomic updates (compare-and-swap)</li>
-</ul>
+<h4 id="supported-headers">Supported Headers</h4>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>Header</strong></td>
+          <td><strong>Meaning</strong></td>
+          <td><strong>Failure result</strong></td>
+      </tr>
+      <tr>
+          <td><code>If-None-Match: &quot;*&quot;</code></td>
+          <td>Write succeeds only if the object does not exist (put-if-absent semantics).</td>
+          <td><code>412 Precondition Failed</code> if the object already exists.</td>
+      </tr>
+      <tr>
+          <td><code>If-Match: &quot;&lt;etag&gt;&quot; or &quot;*&quot;</code></td>
+          <td>Write succeeds only if the object exists and its ETag matches (atomic update / compare-and-swap).</td>
+          <td><code>412 Precondition Failed</code> if the object does not exist or the ETag does not match.</td>
+      </tr>
+  </tbody>
+</table>
 <h4 id="restrictions">Restrictions</h4>
 <ul>
-<li>Cannot use both headers together in same request</li>
-<li>No additional charges for failed conditional requests</li>
+<li>Cannot use both headers together in the same request.</li>
+<li>No additional charges for failed conditional requests.</li>
+</ul>
+<h3 id="aws-s3-conditional-completemultipartupload-specification">AWS S3 Conditional CompleteMultipartUpload Specification</h3>
+<p>Conditional multipart completion applies to
+<code>CompleteMultipartUpload</code>. Although the request finalizes an existing
+multipart upload, the conditional headers are evaluated against the
+current committed object at the destination key, not against the MPU&rsquo;s
+temporary part state.</p>
+<h4 id="supported-headers-1">Supported Headers</h4>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>Header</strong></td>
+          <td><strong>Meaning</strong></td>
+          <td><strong>Failure result</strong></td>
+      </tr>
+      <tr>
+          <td><code>If-None-Match: &quot;*&quot;</code></td>
+          <td>Complete the MPU only if no committed object currently exists at the destination key.</td>
+          <td><code>412 Precondition Failed</code> if the destination key already exists.</td>
+      </tr>
+      <tr>
+          <td><code>If-Match: &quot;&lt;etag&gt;&quot;</code></td>
+          <td>Complete the MPU only if the current committed object exists and its ETag matches.</td>
+          <td><code>412 Precondition Failed</code> if the object is missing or the ETag does not match.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="restrictions-and-notes">Restrictions and Notes</h4>
+<ul>
+<li><code>If-Match</code> and <code>If-None-Match</code> must not be used together.</li>
+<li><code>CreateMultipartUpload</code>, <code>UploadPart</code>, and <code>UploadPartCopy</code> do not
+use these destination write headers. The precondition is enforced only
+when the client calls <code>CompleteMultipartUpload</code>.</li>
+<li>In-progress multipart uploads do not count as an existing committed
+object for <code>If-None-Match: *</code>.</li>
+<li>The MPU parts remain associated with the multipart upload until the
+complete request succeeds or the upload is aborted.</li>
 </ul>
 <h3 id="aws-s3-conditional-read-specification">AWS S3 Conditional Read Specification</h3>
-<p>TODO</p>
+<p>Conditional reads apply to <code>GetObject</code> and <code>HeadObject</code>. They do not mutate object state; they only decide whether the
+current representation should be returned.</p>
+<h4 id="supported-headers-2">Supported Headers</h4>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>Header</strong></td>
+          <td><strong>Meaning</strong></td>
+          <td><strong>Failure result</strong></td>
+      </tr>
+      <tr>
+          <td><code>If-Match: &quot;&lt;etag&gt;&quot;</code></td>
+          <td>Return the object only if the current ETag matches</td>
+          <td><code>412 Precondition Failed</code></td>
+      </tr>
+      <tr>
+          <td><code>If-None-Match: &quot;&lt;etag&gt;&quot;</code></td>
+          <td>Return the object only if the current ETag does not match</td>
+          <td><code>304 Not Modified</code></td>
+      </tr>
+      <tr>
+          <td><code>If-Modified-Since: &lt;http-date&gt;</code></td>
+          <td>Return the object only if it has been modified since the supplied time</td>
+          <td><code>304 Not Modified</code></td>
+      </tr>
+      <tr>
+          <td><code>If-Unmodified-Since: &lt;http-date&gt;</code></td>
+          <td>Return the object only if it has not been modified since the supplied time</td>
+          <td><code>412 Precondition Failed</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><code>HeadObject</code> uses the same validators and status codes as <code>GetObject</code>; the only difference is that the successful
+response has no body.</p>
+<h4 id="header-combination-rules">Header Combination Rules</h4>
+<p>AWS S3 documents two precedence rules that are important for compatibility:</p>
+<ul>
+<li>If both <code>If-Match</code> and <code>If-Unmodified-Since</code> are present, and the ETag comparison succeeds while the time check
+fails, S3 still returns success.</li>
+<li>If both <code>If-None-Match</code> and <code>If-Modified-Since</code> are present, and the ETag comparison fails while the time check
+succeeds, S3 returns <code>304 Not Modified</code>.</li>
+</ul>
+<p>Operationally, this means the ETag-based headers take precedence over the date-based headers within each pair.</p>
+<h4 id="additional-notes">Additional Notes</h4>
+<ul>
+<li>Conditional evaluation happens before any response body is streamed.</li>
+<li><code>Range</code> and <code>partNumber</code> do not change validator semantics; they are applied only after the conditional checks pass.</li>
+<li>Missing objects still follow the normal <code>NoSuchKey</code> / <code>404</code> behavior rather than returning <code>304</code> or <code>412</code>.</li>
+</ul>
 <h3 id="aws-s3-conditional-copy-specification">AWS S3 Conditional Copy Specification</h3>
-<p>TODO</p>
+<p>Conditional copy combines two independent sets of preconditions:</p>
+<ol>
+<li><strong>Source-side read conditions</strong>, evaluated against the object named by <code>x-amz-copy-source</code></li>
+<li><strong>Destination-side write conditions</strong>, evaluated against the destination key being written</li>
+</ol>
+<p>Both sets must pass for the copy to proceed.</p>
+<h4 id="source-object-headers">Source Object Headers</h4>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>Header</strong></td>
+          <td><strong>Meaning</strong></td>
+          <td><strong>Failure result</strong></td>
+      </tr>
+      <tr>
+          <td><code>x-amz-copy-source-if-match: &quot;&lt;etag&gt;&quot;</code></td>
+          <td>Copy only if the source ETag matches</td>
+          <td><code>412 Precondition Failed</code></td>
+      </tr>
+      <tr>
+          <td><code>x-amz-copy-source-if-none-match: &quot;&lt;etag&gt;&quot;</code></td>
+          <td>Copy only if the source ETag does not match</td>
+          <td><code>412 Precondition Failed</code></td>
+      </tr>
+      <tr>
+          <td><code>x-amz-copy-source-if-modified-since: &lt;http-date&gt;</code></td>
+          <td>Copy only if the source was modified since the supplied time</td>
+          <td><code>412 Precondition Failed</code></td>
+      </tr>
+      <tr>
+          <td><code>x-amz-copy-source-if-unmodified-since: &lt;http-date&gt;</code></td>
+          <td>Copy only if the source was not modified since the supplied time</td>
+          <td><code>412 Precondition Failed</code></td>
+      </tr>
+  </tbody>
+</table>
+<p>AWS S3 documents the same precedence pattern for source conditions as for conditional reads:</p>
+<ul>
+<li><code>x-amz-copy-source-if-match</code> takes precedence over <code>x-amz-copy-source-if-unmodified-since</code></li>
+<li><code>x-amz-copy-source-if-none-match</code> takes precedence over <code>x-amz-copy-source-if-modified-since</code></li>
+</ul>
+<h4 id="destination-object-headers">Destination Object Headers</h4>
+<p><code>CopyObject</code> also supports the destination-side write headers already used by conditional <code>PutObject</code>:</p>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>Header</strong></td>
+          <td><strong>Meaning</strong></td>
+          <td><strong>Failure result</strong></td>
+      </tr>
+      <tr>
+          <td><code>If-Match: &quot;&lt;etag&gt;&quot;</code></td>
+          <td>Copy only if the destination object exists and its ETag matches</td>
+          <td><code>412 Precondition Failed</code></td>
+      </tr>
+      <tr>
+          <td><code>If-None-Match: &quot;*&quot;</code></td>
+          <td>Copy only if the destination object does not already exist</td>
+          <td><code>412 Precondition Failed</code></td>
+      </tr>
+  </tbody>
+</table>
+<p>Restrictions and notes:</p>
+<ul>
+<li><code>If-Match</code> and <code>If-None-Match</code> must not be used together.</li>
+<li>Destination conditions are evaluated with the same semantics as conditional writes.</li>
+<li>Source and destination conditions are conjunctive: a request succeeds only when both sides pass.</li>
+<li><code>UploadPartCopy</code> uses the same source-side header family and should follow the same source validation rules.</li>
+</ul>
+<h3 id="aws-s3-conditional-delete-specification">AWS S3 Conditional Delete Specification</h3>
+<p>For the scope of <a href="https://issues.apache.org/jira/browse/HDDS-14907">HDDS-14907</a>,
+we target <code>DeleteObject</code>.</p>
+<p>AWS also supports conditional batch delete through <code>DeleteObjects</code>, but
+that is a separate API surface and is out of scope for this first step.</p>
+<h4 id="supported-header">Supported Header</h4>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>Header</strong></td>
+          <td><strong>Meaning</strong></td>
+          <td><strong>Failure result</strong></td>
+      </tr>
+      <tr>
+          <td><code>If-Match: &quot;&lt;etag&gt;&quot;</code></td>
+          <td>Delete only if the current ETag matches</td>
+          <td><code>412 Precondition Failed</code></td>
+      </tr>
+      <tr>
+          <td><code>If-Match: &quot;*&quot;</code></td>
+          <td>Delete only if the object currently exists</td>
+          <td><code>412 Precondition Failed</code></td>
+      </tr>
+  </tbody>
+</table>
+<p>On success, <code>DeleteObject</code> still returns <code>204 No Content</code>.</p>
+<h4 id="scope-notes">Scope Notes</h4>
+<ul>
+<li>Directory-bucket-only headers <code>x-amz-if-match-last-modified-time</code> and
+<code>x-amz-if-match-size</code> are out of scope.</li>
+<li>Ozone S3 gateway currently behaves like a non-versioned object store
+for this operation, so the design evaluates the current committed key
+only. AWS delete-marker and object-version semantics are not modeled
+here.</li>
+<li>Conditional delete changes only the meaning of requests that carry
+<code>If-Match</code>. Unconditional delete keeps the existing S3-compatible
+&ldquo;delete missing key succeeds&rdquo; behavior.</li>
+</ul>
 <h2 id="implementation">Implementation</h2>
 <h3 id="aws-s3-conditional-write-implementation">AWS S3 Conditional Write Implementation</h3>
-<p>The implementation aims to minimize Redundant RPCs (RTT) while ensuring strict atomicity for conditional operations.</p>
+<p>The implementation aims to minimize redundant RPCs while ensuring
+strict atomicity for conditional operations.</p>
 <ul>
-<li><strong>If-None-Match</strong> utilizes the atomic &ldquo;Create-If-Not-Exists&rdquo; capability (<a href="https://issues.apache.org/jira/browse/HDDS-13963" title="null">HDDS-13963</a>).</li>
-<li><strong>If-Match</strong> optimizes the happy path by pushing ETag validation directly into the Ozone Manager&rsquo;s write path, avoiding preliminary read operations.</li>
+<li><strong>If-None-Match</strong> utilizes the atomic &ldquo;Create-If-Not-Exists&rdquo;
+capability (<a href="https://issues.apache.org/jira/browse/HDDS-13963">HDDS-13963</a>).</li>
+<li><strong>If-Match</strong> reuses the same open-key plus commit workflow as normal
+writes, but converts the caller&rsquo;s ETag into
+<code>expectedDataGeneration</code> during <code>createKey</code>. The gateway sends the
+caller&rsquo;s ETag directly to OM, OM validates it, resolves the current
+<code>updateID</code>, and then reuses the existing atomic rewrite mechanism from
+<a href="https://issues.apache.org/jira/browse/HDDS-10656">HDDS-10656</a>. This
+avoids an extra read RPC to fetch the current ETag and generation
+before opening the key.</li>
 </ul>
-<h4 id="if-none-match-implementation">If-None-Match Implementation</h4>
+<h4 id="request-sequence">Request Sequence</h4>
+<pre tabindex="0"><code class="language-mermaid" data-lang="mermaid">sequenceDiagram
+    actor User
+    participant GW as S3 Gateway
+    participant OM as Ozone Manager
+
+    User-&gt;&gt;GW: PUT object with If-None-Match:* or If-Match:etag
+    alt If-None-Match: *
+        GW-&gt;&gt;OM: createKey(expectedDataGeneration = -1)
+        OM-&gt;&gt;OM: Reject if key already exists
+        OM--&gt;&gt;GW: Open key or KEY_ALREADY_EXISTS
+        opt Open key created
+            GW-&gt;&gt;OM: commitKey()
+            OM-&gt;&gt;OM: Recheck key absence during commit
+            OM--&gt;&gt;GW: Success or generation mismatch
+        end
+    else If-Match: etag
+        Note over GW,OM: No pre-read for current ETag/updateID on the optimistic path
+        GW-&gt;&gt;OM: createKey(expectedETag = etag)
+        OM-&gt;&gt;OM: Validate ETag, derive updateID, persist expectedDataGeneration
+        OM--&gt;&gt;GW: Open key with resolved generation or KEY_NOT_FOUND/ETAG_*
+        opt Open key created
+            GW-&gt;&gt;OM: commitKey()
+            OM-&gt;&gt;OM: Reload open key and reuse atomic rewrite generation check
+            OM--&gt;&gt;GW: Success or KEY_NOT_FOUND
+        end
+    end
+    GW--&gt;&gt;User: 200 OK or 412 Precondition Failed
+</code></pre><h4 id="if-none-match-implementation">If-None-Match Implementation</h4>
 <p>This implementation ensures strict create-only semantics by utilizing a specific generation ID marker.</p>
 <p>In <code>OzoneConsts.java</code>, add the <code>-1</code> as a constant for readability:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">/**
@@ -699,8 +994,9 @@ s=d.getElementsByTagName('script')[0];
 </span></span></code></pre></div><h5 id="s3-gateway-layer">S3 Gateway Layer</h5>
 <ol>
 <li>Parse <code>If-None-Match: *</code>.</li>
-<li>Set <code>existingKeyGeneration = OzoneConsts.EXPECTED_DATA_GENERATION_CREATE_IF_NOT_EXISTS</code>.</li>
-<li>Call <code>RpcClient.rewriteKey()</code>.</li>
+<li>Use a dedicated client API such as <code>RpcClient.createKeyIfNotExists()</code>.</li>
+<li>The client populates <code>expectedDataGeneration = OzoneConsts.EXPECTED_DATA_GENERATION_CREATE_IF_NOT_EXISTS</code> in the
+outgoing <code>KeyArgs</code>.</li>
 </ol>
 <h5 id="om-create-phase">OM Create Phase</h5>
 <ol>
@@ -711,48 +1007,101 @@ s=d.getElementsByTagName('script')[0];
 <h5 id="om-commit-phase-atomicity">OM Commit Phase (Atomicity)</h5>
 <ol>
 <li>During the commit phase (or strict atomic create), the OM validates that the key still does not exist.</li>
-<li>If a concurrent client created the key between the Create and Commit phases, the transaction fails with <code>KET_GENERATION_MISMATCH</code>.</li>
+<li>If a concurrent client created the key between the Create and Commit
+phases, the transaction fails with a generation-mismatch error.</li>
 </ol>
 <h5 id="race-condition-handling">Race Condition Handling</h5>
-<p>Using <code>OzoneConsts.EXPECTED_DATA_GENERATION_CREATE_IF_NOT_EXISTS = -1</code> ensures atomicity. If a concurrent write (Client B) commits between Client A&rsquo;s Create and Commit,
-Client A&rsquo;s commit fails the <code>CREATE IF NOT EXISTS</code> validation check, preserving strict create-if-not-exists semantics.</p>
+<p>Using <code>OzoneConsts.EXPECTED_DATA_GENERATION_CREATE_IF_NOT_EXISTS = -1</code>
+ensures atomicity. If a concurrent write (Client B) commits between
+Client A&rsquo;s Create and Commit, Client A&rsquo;s commit fails the
+<code>CREATE IF NOT EXISTS</code> validation check, preserving strict
+create-if-not-exists semantics.</p>
 <blockquote>
-<p><strong>Note</strong>: This ability will be added along with <a href="https://issues.apache.org/jira/browse/HDDS-13963">HDDS-13963</a> (Atomic Create-If-Not-Exists).</p>
+<p><strong>Note</strong>: This ability will be added along with
+<a href="https://issues.apache.org/jira/browse/HDDS-13963">HDDS-13963</a>
+(Atomic Create-If-Not-Exists).</p>
 </blockquote>
 <h4 id="if-match-implementation">If-Match Implementation</h4>
-<p>To optimize performance and reduce latency, we avoid a pre-flight check (GetS3KeyDetails) and instead validate the ETag during the OM Write operation.
-This requires adding an optional <code>expectedETag</code> field to <code>KeyArgs</code>. This approach optimizes the &ldquo;happy path&rdquo; (successful match) by removing an extra network round trip.
-For failing requests, they still incur the cost of a write RPC and Raft log entry, but this is acceptable under optimistic concurrency control assumptions.</p>
+<p><code>If-Match</code> should be treated as a compare-and-swap rewrite, not as a
+read-then-write sequence in the gateway. The intent is to piggyback on
+the existing atomic rewrite machinery without adding a gateway-side
+metadata fetch:</p>
+<ol>
+<li>The caller sends the ETag it previously observed.</li>
+<li>The gateway forwards that ETag to OM in the create/open request.</li>
+<li>OM validates the ETag against the current committed key while
+holding the normal bucket/key lock.</li>
+<li>If the ETag matches, OM extracts the current <code>updateID</code> and stores it
+as <code>expectedDataGeneration</code> in the open key created by <code>createKey</code>.</li>
+<li>The create response returns that open-key state to the client, so the
+subsequent <code>commitKey</code> request carries the resolved generation rather
+than the original ETag predicate.</li>
+<li>The commit phase then reuses the existing atomic rewrite validation
+to detect races before the new object becomes visible.</li>
+</ol>
+<p>This is the optimistic CAS fast path: successful requests avoid an
+extra <code>GetS3KeyDetails</code> round trip to fetch the current ETag and
+<code>updateID</code> before issuing the write. Instead, the gateway sends only
+the client-supplied ETag, and OM resolves the generation internally as
+part of the normal write path.</p>
 <h5 id="s3-gateway-layer-1">S3 Gateway Layer</h5>
 <ol>
 <li>Parse <code>If-Match: &quot;&lt;etag&gt;&quot;</code> header.</li>
-<li>Populate <code>KeyArgs</code> with the parsed <code>expectedETag</code>.</li>
-<li>Send the write request (CreateKey) to OM.</li>
+<li>Call a dedicated client API such as <code>RpcClient.rewriteKeyIfMatch()</code>
+with the parsed <code>expectedETag</code>.</li>
+<li>The client populates <code>KeyArgs.expectedETag</code> and sends the create
+request to OM.</li>
+<li>The gateway does not issue a pre-flight metadata lookup to fetch the
+current ETag or <code>updateID</code>.</li>
+<li>Once OM returns the open key with resolved
+<code>expectedDataGeneration</code>, the normal output-stream commit path carries
+that generation on <code>commitKey</code>.</li>
 </ol>
 <h5 id="om-create-phase-1">OM Create Phase</h5>
-<p>Validation is performed within the <code>validateAndUpdateCache</code> method to ensure atomicity within the Ratis state machine application.</p>
+<p>Validation is performed within the <code>validateAndUpdateCache</code> method to
+ensure atomicity within the Ratis state machine application.</p>
 <ol>
 <li><strong>Locking</strong>: The OM acquires the write lock for the bucket/key.</li>
 <li><strong>Key Lookup</strong>: Retrieve the existing key from <code>KeyTable</code>.</li>
 <li><strong>Validation</strong>:
 <ul>
 <li><strong>Key Not Found</strong>: If the key does not exist, throw <code>KEY_NOT_FOUND</code> (maps to S3 412).</li>
-<li><strong>No ETag Metadata</strong>: If the existing key (e.g., uploaded via OFS) does not have an ETag property, throw <code>ETAG_NOT_AVAILABLE</code> (maps to S3 412). The precondition cannot be evaluated, so we must fail rather than silently proceed.</li>
-<li><strong>ETag Mismatch</strong>: Compare <code>existingKey.ETag</code> with <code>expectedETag</code>. If they do not match, throw <code>ETAG_MISMATCH</code> (maps to S3 412).</li>
+<li><strong>No ETag Metadata</strong>: If the existing key (e.g., uploaded via
+OFS) does not have an ETag property, throw
+<code>ETAG_NOT_AVAILABLE</code> (maps to S3 412). The precondition cannot
+be evaluated, so we must fail rather than silently proceed.</li>
+<li><strong>ETag Mismatch</strong>: Compare <code>existingKey.ETag</code> with
+<code>expectedETag</code>. If they do not match, throw <code>ETAG_MISMATCH</code>
+(maps to S3 412).</li>
 </ul>
 </li>
-<li><strong>Extract Generation</strong>: If ETag matches, extract <code>existingKey.updateID</code>.</li>
-<li><strong>Create Open Key</strong>: Create open key entry with <code>expectedDataGeneration = existingKey.updateID</code>.</li>
+<li><strong>Extract Generation</strong>: If ETag matches, extract
+<code>existingKey.updateID</code>.</li>
+<li><strong>Bridge to Atomic Rewrite</strong>: Create the open key entry with
+<code>expectedDataGeneration = existingKey.updateID</code>, so the remainder of
+the flow uses the same atomic rewrite invariant as HDDS-10656.</li>
+<li><strong>Return Resolved State</strong>: The create response returns the open-key
+metadata containing that generation, so the later <code>commitKey</code> request
+can carry the same resolved rewrite condition.</li>
 </ol>
 <h5 id="om-commit-phase">OM Commit Phase</h5>
-<p>The commit phase reuses the existing atomic-rewrite validation logic from HDDS-10656:</p>
+<p>The commit phase reuses the existing atomic rewrite validation logic
+from HDDS-10656:</p>
 <ol>
-<li>Read open key entry (contains <code>expectedDataGeneration</code> set during create phase).</li>
+<li>Read open key entry (contains <code>expectedDataGeneration</code> set during
+create phase from the ETag-validated key).</li>
 <li>Read current committed key from <code>KeyTable</code>.</li>
 <li>Validate <code>currentKey.updateID == openKey.expectedDataGeneration</code>.</li>
-<li>If match, commit succeeds. If mismatch (concurrent modification), throw <code>KEY_NOT_FOUND</code> (maps to S3 412).</li>
+<li>If match, commit succeeds. If mismatch (concurrent modification),
+throw <code>KEY_NOT_FOUND</code> (maps to S3 412).</li>
+<li>Clear the conditional fields before persisting the final committed
+key so they remain open-key state only.</li>
 </ol>
-<p>This approach ensures end-to-end atomicity: even if another client modifies the key between Create and Commit phases, the commit will fail.</p>
+<p>This approach ensures end-to-end atomicity: even if another client
+modifies the key between Create and Commit phases, the commit will
+fail. The gateway never needs to fetch <code>updateID</code> itself; OM derives it
+from the matched ETag during <code>createKey</code>, and the rest of the write then
+rides on the standard atomic rewrite path.</p>
 <h4 id="error-mapping">Error Mapping</h4>
 <table>
   <thead>
@@ -796,16 +1145,427 @@ For failing requests, they still incur the cost of a write RPC and Raft log entr
       </tr>
   </tbody>
 </table>
+<h2 id="aws-s3-conditional-completemultipartupload-implementation">AWS S3 Conditional CompleteMultipartUpload Implementation</h2>
+<p>Conditional MPU completion should reuse the same conditional write fields
+already present in <code>KeyArgs</code>, but unlike normal conditional <code>PUT</code>, it
+does not need an open-key plus later commit bridge. The final key is
+assembled and committed inside one OM transaction in
+<code>S3MultipartUploadCompleteRequest.validateAndUpdateCache(...)</code> while
+holding the normal bucket write lock.</p>
+<h3 id="request-sequence-1">Request Sequence</h3>
+<pre tabindex="0"><code class="language-mermaid" data-lang="mermaid">sequenceDiagram
+    actor User
+    participant GW as S3 Gateway
+    participant OM as Ozone Manager
+
+    User-&gt;&gt;GW: CompleteMultipartUpload with optional If-None-Match / If-Match
+    GW-&gt;&gt;GW: Parse conditional write headers
+    GW-&gt;&gt;OM: completeMultipartUpload(keyArgs + partsList)
+    OM-&gt;&gt;OM: Acquire bucket lock
+    OM-&gt;&gt;OM: Load current committed key and MPU state
+    OM-&gt;&gt;OM: Validate destination precondition
+    alt Precondition failed
+        OM--&gt;&gt;GW: KEY_ALREADY_EXISTS / KEY_NOT_FOUND / ETAG_*
+        GW--&gt;&gt;User: 412 Precondition Failed
+    else Preconditions pass
+        OM-&gt;&gt;OM: Validate MPU parts and build final key
+        OM-&gt;&gt;OM: Write key table entry and remove MPU state
+        OM--&gt;&gt;GW: Success
+        GW--&gt;&gt;User: 200 OK
+    end
+</code></pre><h3 id="gateway-flow">Gateway Flow</h3>
+<ol>
+<li>Parse <code>If-None-Match</code> / <code>If-Match</code> using the same shared helper used
+by conditional <code>PUT</code>.</li>
+<li>Extend the existing <code>completeMultipartUpload</code> client API, or add a
+conditional overload, so the gateway can pass the parsed condition to
+OM through <code>OmKeyArgs</code>.</li>
+<li>Populate the request as follows:
+<ul>
+<li><code>If-None-Match: *</code> -&gt;
+<code>expectedDataGeneration = OzoneConsts.EXPECTED_GEN_CREATE_IF_NOT_EXISTS</code></li>
+<li><code>If-Match: &quot;&lt;etag&gt;&quot;</code> -&gt; <code>expectedETag = &lt;etag&gt;</code></li>
+</ul>
+</li>
+<li>Ensure the OM protocol translator copies these optional fields from
+<code>OmKeyArgs</code> into the <code>CompleteMultiPartUploadRequest</code> <code>KeyArgs</code>.</li>
+<li>Map conditional validation failures to the same S3
+<code>PreconditionFailed</code> response used by the other conditional write
+paths.</li>
+</ol>
+<h3 id="om-validation">OM Validation</h3>
+<p>Validation should occur in
+<code>S3MultipartUploadCompleteRequest.validateAndUpdateCache(...)</code> after the
+request acquires the bucket write lock and before it assembles the final
+key from the uploaded parts.</p>
+<p>The proposed flow is:</p>
+<ol>
+<li>Load the current committed destination key from <code>keyTable</code>.</li>
+<li>Reuse the same <code>If-Match</code> validation helper already used by
+conditional <code>PUT</code> to convert <code>expectedETag</code> into
+<code>expectedDataGeneration</code>.</li>
+<li>Reuse the same atomic rewrite validation helper to evaluate:
+<ul>
+<li>create-if-absent semantics for <code>If-None-Match: *</code></li>
+<li>generation/ETag match semantics for <code>If-Match</code></li>
+</ul>
+</li>
+<li>If validation passes, continue with the existing MPU complete logic:
+validate part order, validate part identity, compute the MPU ETag,
+write the final key, and delete the multipart metadata/open-key
+state.</li>
+<li>Clear conditional-only fields before persisting the committed key so
+they remain request-scoped metadata rather than part of the final key
+state.</li>
+</ol>
+<p>Because the final destination validation and the key-table write happen
+under the same OM bucket lock in one request, this path does not need a
+separate second-phase commit revalidation step like conditional
+<code>PutObject</code>.</p>
+<h3 id="error-mapping-1">Error Mapping</h3>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>OM Error</strong></td>
+          <td><strong>S3 Status</strong></td>
+          <td><strong>S3 Error Code</strong></td>
+          <td><strong>Scenario</strong></td>
+      </tr>
+      <tr>
+          <td><code>KEY_ALREADY_EXISTS</code></td>
+          <td>412</td>
+          <td>PreconditionFailed</td>
+          <td><code>If-None-Match</code> failed because a committed destination object already exists</td>
+      </tr>
+      <tr>
+          <td><code>KEY_NOT_FOUND</code></td>
+          <td>412</td>
+          <td>PreconditionFailed</td>
+          <td><code>If-Match</code> failed because the current destination object is missing</td>
+      </tr>
+      <tr>
+          <td><code>ETAG_NOT_AVAILABLE</code></td>
+          <td>412</td>
+          <td>PreconditionFailed</td>
+          <td>Destination key has no ETag metadata</td>
+      </tr>
+      <tr>
+          <td><code>ETAG_MISMATCH</code></td>
+          <td>412</td>
+          <td>PreconditionFailed</td>
+          <td>Destination ETag mismatch</td>
+      </tr>
+  </tbody>
+</table>
+<p>If Ozone later introduces an explicit conflict result for this path, the
+gateway should map it to <code>409 ConditionalRequestConflict</code>, reusing the
+same S3 error mapping as conditional <code>PutObject</code>. The initial MPU
+complete design does not require a dedicated second-phase conflict
+signal because the validation and final key update are already
+serialized in one OM transaction.</p>
 <h2 id="aws-s3-conditional-read-implementation">AWS S3 Conditional Read Implementation</h2>
-<p>TODO</p>
+<p>Conditional reads can be implemented fully in the S3 gateway. Unlike conditional writes, no OM write-path changes are
+required because the operation is read-only and the gateway already fetches object metadata before streaming the body.</p>
+<h3 id="request-sequence-2">Request Sequence</h3>
+<pre tabindex="0"><code class="language-mermaid" data-lang="mermaid">sequenceDiagram
+    actor User
+    participant GW as S3 Gateway
+    participant OM as Ozone Manager
+
+    User-&gt;&gt;GW: GET/HEAD with conditional headers
+    GW-&gt;&gt;OM: getS3KeyDetails() / headS3Object()
+    OM--&gt;&gt;GW: ETag, modificationTime, key info
+    GW-&gt;&gt;GW: Evaluate ETag/date precedence rules
+    alt Not modified
+        GW--&gt;&gt;User: 304 Not Modified
+    else Precondition failed
+        GW--&gt;&gt;User: 412 Precondition Failed
+    else Preconditions pass
+        opt GET or ranged GET
+            GW-&gt;&gt;OM: getKey() / open data stream
+            OM--&gt;&gt;GW: Object data
+        end
+        GW--&gt;&gt;User: 200 OK / 206 Partial Content
+    end
+</code></pre><h3 id="gateway-flow-1">Gateway Flow</h3>
+<ol>
+<li>Parse <code>If-Match</code>, <code>If-None-Match</code>, <code>If-Modified-Since</code>, and <code>If-Unmodified-Since</code> from the request.</li>
+<li>Fetch object metadata using the existing read path:
+<ul>
+<li><code>getS3KeyDetails()</code> for <code>GetObject</code></li>
+<li><code>headS3Object()</code> for <code>HeadObject</code></li>
+</ul>
+</li>
+<li>Evaluate the conditional headers against:
+<ul>
+<li><code>OzoneConsts.ETAG</code> for ETag-based checks</li>
+<li><code>modificationTime</code> for date-based checks</li>
+</ul>
+</li>
+<li>If evaluation returns <code>Not Modified</code>, return <code>304</code> immediately without opening the data stream.</li>
+<li>If evaluation returns <code>Precondition Failed</code>, return <code>412</code> immediately without opening the data stream.</li>
+<li>Only when all preconditions pass should the gateway continue with <code>Range</code>, <code>partNumber</code>, and body streaming.</li>
+</ol>
+<h3 id="etag-availability">ETag Availability</h3>
+<p>Date-based validators work for all keys because <code>modificationTime</code> is always available. ETag-based validators need more
+care because keys written outside the S3 gateway may not have <code>OzoneConsts.ETAG</code> metadata.</p>
+<p>The proposed behavior is:</p>
+<ul>
+<li><code>If-Match</code> fails with <code>412</code> when the key has no ETag metadata, because the gateway cannot prove equality.</li>
+<li><code>If-None-Match</code> is treated as &ldquo;not matched&rdquo; when the key has no ETag metadata, so the read may proceed.</li>
+</ul>
+<p>This keeps the implementation conservative for positive matches while still allowing Ozone-native keys to participate
+in cache-validation flows based on modification time.</p>
+<h3 id="reusable-evaluator">Reusable Evaluator</h3>
+<p>It is worth introducing one shared helper in the S3 gateway, for example in <code>EndpointBase</code>, that evaluates the
+combination rules once and returns one of three outcomes:</p>
+<ul>
+<li><code>PROCEED</code></li>
+<li><code>NOT_MODIFIED</code></li>
+<li><code>PRECONDITION_FAILED</code></li>
+</ul>
+<p><code>GetObject</code> and <code>HeadObject</code> can use this helper directly, while <code>CopyObject</code> can reuse the same logic for its
+source-side validation and remap <code>NOT_MODIFIED</code> to <code>PRECONDITION_FAILED</code>, matching AWS copy semantics.</p>
 <h2 id="aws-s3-conditional-copy-implementation">AWS S3 Conditional Copy Implementation</h2>
-<p>TODO</p>
+<p>Conditional copy should reuse both halves of this design:</p>
+<ul>
+<li>the source-side read validator from conditional <code>GET</code> / <code>HEAD</code></li>
+<li>the destination-side atomic write path from conditional <code>PUT</code></li>
+</ul>
+<h3 id="request-sequence-3">Request Sequence</h3>
+<pre tabindex="0"><code class="language-mermaid" data-lang="mermaid">sequenceDiagram
+    actor User
+    participant GW as S3 Gateway
+    participant OM as Ozone Manager
+
+    User-&gt;&gt;GW: COPY with source and destination conditions
+    GW-&gt;&gt;OM: get source key details
+    OM--&gt;&gt;GW: Source metadata + bound content stream
+    GW-&gt;&gt;GW: Evaluate x-amz-copy-source-if-* headers
+    alt Source precondition failed
+        GW--&gt;&gt;User: 412 Precondition Failed
+    else Source passes
+        GW-&gt;&gt;OM: create destination key (normal / If-None-Match / If-Match)
+        OM-&gt;&gt;OM: Validate destination state and open key
+        OM--&gt;&gt;GW: Open key or 412-mapped error
+        opt Destination open key created
+            GW-&gt;&gt;OM: commit destination key using source snapshot
+            OM-&gt;&gt;OM: Revalidate generation for conditional writes
+            OM--&gt;&gt;GW: Success or 412-mapped error
+        end
+        GW--&gt;&gt;User: 200 OK or 412 Precondition Failed
+    end
+</code></pre><h3 id="source-validation">Source Validation</h3>
+<p>The current gateway implementation already fetches source metadata before a copy. The proposed change is to make that
+metadata lookup authoritative for the entire copy flow:</p>
+<ol>
+<li>Resolve the source object into one <code>OzoneKeyDetails</code>.</li>
+<li>Evaluate all <code>x-amz-copy-source-if-*</code> headers against that snapshot.</li>
+<li>If the source preconditions fail, return <code>412</code> before any destination key is opened.</li>
+<li>Reuse <code>sourceKeyDetails.getContent()</code> for the copy stream instead of performing a second <code>getKey()</code> lookup by name.</li>
+</ol>
+<p>Step 4 is important. <code>OzoneKeyDetails</code> already captures the <code>OmKeyInfo</code> used for validation and exposes a content
+supplier bound to that snapshot. Reusing it avoids a time-of-check / time-of-use gap where the source key could be
+re-resolved to a different generation after the precondition checks have already passed.</p>
+<h3 id="destination-validation">Destination Validation</h3>
+<p>Destination conditions should reuse the conditional write APIs introduced for <code>PutObject</code>:</p>
+<ul>
+<li>no destination header: <code>createKey</code></li>
+<li><code>If-None-Match: *</code>: <code>createKeyIfNotExists</code></li>
+<li><code>If-Match: &quot;&lt;etag&gt;&quot;</code>: <code>rewriteKeyIfMatch</code></li>
+</ul>
+<p>This gives <code>CopyObject</code> the same atomic destination guarantees as conditional <code>PutObject</code>:</p>
+<ol>
+<li>Validate the current destination state during the open/create phase.</li>
+<li>Persist the expected destination generation in the open key.</li>
+<li>Revalidate the generation during commit so concurrent overwrites fail atomically.</li>
+</ol>
+<p>In practice, once conditional <code>PUT</code> support exists, most destination-side copy work stays in the gateway and simply
+selects the correct client API, exactly as <code>PutObject</code> multiplexes between normal create and conditional create/rewrite.</p>
+<h3 id="metadata-tags-and-multipart-copy">Metadata, Tags, and Multipart Copy</h3>
+<p>Conditional support should remain orthogonal to the existing metadata/tagging directives:</p>
+<ul>
+<li>source preconditions are evaluated first</li>
+<li>metadata and tag directives are resolved next</li>
+<li>destination creation mode is selected last</li>
+</ul>
+<p><code>UploadPartCopy</code> can reuse the same source-side evaluator. It does not need the destination <code>If-Match</code> /
+<code>If-None-Match</code> handling because the destination is a multipart upload part rather than a committed object key.</p>
+<h3 id="error-mapping-2">Error Mapping</h3>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>Failure point</strong></td>
+          <td><strong>OM/Gateway result</strong></td>
+          <td><strong>S3 Status</strong></td>
+          <td><strong>Scenario</strong></td>
+      </tr>
+      <tr>
+          <td>Source validator</td>
+          <td>Gateway precondition failure</td>
+          <td>412</td>
+          <td>Source ETag/date condition failed</td>
+      </tr>
+      <tr>
+          <td>Destination validator</td>
+          <td><code>KEY_ALREADY_EXISTS</code></td>
+          <td>412</td>
+          <td><code>If-None-Match</code> failed at destination</td>
+      </tr>
+      <tr>
+          <td>Destination validator</td>
+          <td><code>KEY_NOT_FOUND</code></td>
+          <td>412</td>
+          <td><code>If-Match</code> failed because destination is missing or changed</td>
+      </tr>
+      <tr>
+          <td>Destination validator</td>
+          <td><code>ETAG_NOT_AVAILABLE</code></td>
+          <td>412</td>
+          <td>Destination key has no ETag metadata</td>
+      </tr>
+      <tr>
+          <td>Destination validator</td>
+          <td><code>ETAG_MISMATCH</code></td>
+          <td>412</td>
+          <td>Destination ETag mismatch</td>
+      </tr>
+  </tbody>
+</table>
+<p>This initial design intentionally reuses the <code>412</code> mapping already described for conditional writes. If Ozone later
+wants to distinguish in-flight destination races with a dedicated <code>409 ConditionalRequestConflict</code>, that can be added
+without changing the overall structure above.</p>
+<h2 id="aws-s3-conditional-delete-implementation">AWS S3 Conditional Delete Implementation</h2>
+<p>Conditional delete is simpler than conditional write or copy because the
+delete path is already a single OM transaction. There is no open-key /
+commit split, so atomicity comes from validating the precondition and
+applying the tombstone while holding the normal delete lock in one
+request.</p>
+<h3 id="request-sequence-4">Request Sequence</h3>
+<pre tabindex="0"><code class="language-mermaid" data-lang="mermaid">sequenceDiagram
+    actor User
+    participant GW as S3 Gateway
+    participant OM as Ozone Manager
+
+    User-&gt;&gt;GW: DELETE with optional If-Match
+    alt No If-Match
+        GW-&gt;&gt;OM: deleteKey()
+        OM-&gt;&gt;OM: Apply existing delete semantics
+        OM--&gt;&gt;GW: Success or KEY_NOT_FOUND
+        GW--&gt;&gt;User: 204 No Content
+    else If-Match present
+        GW-&gt;&gt;OM: deleteKey(expectedETag or *)
+        OM-&gt;&gt;OM: Validate current key under lock and write tombstone
+        OM--&gt;&gt;GW: Success or KEY_NOT_FOUND/ETAG_*
+        GW--&gt;&gt;User: 204 No Content or 412 Precondition Failed
+    end
+</code></pre><h3 id="gateway-flow-2">Gateway Flow</h3>
+<ol>
+<li>Parse the optional <code>If-Match</code> header.</li>
+<li>If absent, continue to call the existing delete path.</li>
+<li>If present, call a conditional delete client API, or extend the
+existing delete request to carry the expected match value.</li>
+<li>Map conditional failures to <code>412 Precondition Failed</code> instead of the
+unconditional delete behavior of returning <code>204</code> on missing keys.</li>
+</ol>
+<p>The gateway should not pre-read the object to validate the ETag. Doing
+so would add an avoidable round trip and reintroduce a race. As with
+conditional <code>PUT</code>, the validation should happen in OM under the bucket
+write lock.</p>
+<h3 id="om-validation-1">OM Validation</h3>
+<p>The delete request already acquires the bucket write lock and resolves
+the target key inside <code>validateAndUpdateCache</code>. Conditional delete can
+reuse that path with one extra validation step before the tombstone is
+written.</p>
+<p>The proposed behavior is:</p>
+<ol>
+<li>Look up the current key in <code>KeyTable</code>.</li>
+<li>If <code>If-Match</code> is absent, keep the existing behavior.</li>
+<li>If <code>If-Match</code> is <code>&quot;*&quot;</code>, require that the key exists.</li>
+<li>If <code>If-Match</code> contains an ETag, require that the key exists and that
+<code>OzoneConsts.ETAG</code> matches the supplied value.</li>
+<li>If the key has no ETag metadata, fail the request rather than
+deleting an object whose precondition cannot be evaluated.</li>
+<li>If validation succeeds, continue with the normal delete flow:
+update <code>updateID</code>, write the tombstone, and account for quota
+release.</li>
+</ol>
+<p>Because this all happens in one OM request under lock, there is no need
+for an extra generation field or a second-phase revalidation.</p>
+<h3 id="reuse-of-conditional-write-fields">Reuse of Conditional Write Fields</h3>
+<p>If <code>expectedETag</code> is added to <code>KeyArgs</code> for conditional <code>PUT</code>, the same
+field can be reused by <code>DeleteKeyRequest</code>. The <code>If-Match: *</code> case can be
+represented either as the literal <code>*</code> in <code>expectedETag</code> or by a separate
+boolean marker. The simpler design is to reuse the literal header value
+and interpret it in OM.</p>
+<h3 id="error-mapping-3">Error Mapping</h3>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>Failure point</strong></td>
+          <td><strong>OM/Gateway result</strong></td>
+          <td><strong>S3 Status</strong></td>
+          <td><strong>Scenario</strong></td>
+      </tr>
+      <tr>
+          <td>Conditional delete</td>
+          <td><code>KEY_NOT_FOUND</code></td>
+          <td>412</td>
+          <td><code>If-Match</code> present but the key does not exist</td>
+      </tr>
+      <tr>
+          <td>Conditional delete</td>
+          <td><code>ETAG_NOT_AVAILABLE</code></td>
+          <td>412</td>
+          <td>Key exists but has no ETag metadata</td>
+      </tr>
+      <tr>
+          <td>Conditional delete</td>
+          <td><code>ETAG_MISMATCH</code></td>
+          <td>412</td>
+          <td>Supplied ETag does not match current object</td>
+      </tr>
+  </tbody>
+</table>
+<p>One gateway nuance is important: today <code>DeleteObject</code> maps
+<code>KEY_NOT_FOUND</code> to <code>204 No Content</code> for unconditional deletes. That
+mapping must stay conditional on the absence of <code>If-Match</code>; otherwise
+<code>If-Match: *</code> would incorrectly succeed on missing keys.</p>
 <h2 id="references">References</h2>
 <ul>
 <li><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-requests.html">AWS S3 Conditional Requests</a></li>
+<li><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-writes.html">AWS S3 Conditional Writes</a></li>
+<li><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-deletes.html">AWS S3 Conditional Deletes</a></li>
+<li><a href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_CompleteMultipartUpload.html">AWS S3 CompleteMultipartUpload API</a></li>
+<li><a href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObject.html">AWS S3 DeleteObject API</a></li>
 <li><a href="https://tools.ietf.org/html/rfc7232">RFC 7232 - HTTP Conditional Requests</a></li>
 <li><a href="https://issues.apache.org/jira/browse/HDDS-10656">HDDS-10656 - Atomic Rewrite Key</a></li>
 <li><a href="https://issues.apache.org/jira/browse/HDDS-13963">HDDS-13963 - Atomic Create-If-Not-Exists</a></li>
+<li><a href="https://issues.apache.org/jira/browse/HDDS-14907">HDDS-14907 - Conditional Delete (DeleteObject)</a></li>
 <li><a href="https://www.morling.dev/blog/leader-election-with-s3-conditional-writes/">Leader Election with S3 Conditional Writes</a></li>
 <li><a href="https://simonwillison.net/2025/Oct/11/mvcc-s3/">An MVCC-like columnar table on S3 with constant-time deletes</a></li>
 </ul>
@@ -821,7 +1581,7 @@ For failing requests, they still incur the cost of a write RPC and Raft log entr
 <footer class="footer">
   <div class="container">
     <span class="small text-muted">
-      Version: 2.2.0-SNAPSHOT, Last Modified: January 15, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/4b90304b0a731274c0d4f8fe38dcc38676ff647c">4b90304b0a</a>
+      Version: 2.2.0-SNAPSHOT, Last Modified: April 26, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/e0e821f631093bb7428633bb88ebeaa5d3a56985">e0e821f631</a>
     </span>
   </div>
 </footer>
