@@ -586,6 +586,11 @@ s=d.getElementsByTagName('script')[0];
           <td>磁盘平衡完成后自动停止（默认值：false）。与 <code>start</code> 和 <code>update</code> 命令一起使用。</td>
           <td><code>-s false</code><br><code>--stop-after-disk-even true</code></td>
       </tr>
+      <tr>
+          <td><code>-c/--container-states</code></td>
+          <td>以逗号分隔的容器生命周期状态名称，表示可在磁盘之间移动的状态。配合 <code>start</code> 和 <code>update</code> 命令使用。</td>
+          <td><code>-c CLOSED,QUASI_CLOSED</code><br><code>--container-states OPEN,CLOSED</code></td>
+      </tr>
   </tbody>
 </table>
 <h3 id="示例">示例</h3>
@@ -687,7 +692,12 @@ s=d.getElementsByTagName('script')[0];
           <td>容器成功从源卷移动到目标卷后，源容器副本被删除前的延迟时间。这种延迟删除机制旨在避免旧副本的即时删除导致持有旧容器副本的线程数据读取失败。单位：ns、ms、s、m、h、d。</td>
       </tr>
       <tr>
-          <td><code>hdds.datanode.disk.balancer.volume.container.choosing.policy</code></td>
+          <td><code>hdds.datanode.disk.balancer.container.states</code></td>
+          <td><code>CLOSED,QUASI_CLOSED</code></td>
+          <td>以逗号分隔的容器生命周期状态名称列表，指定了允许在不同磁盘之间移动的容器状态（须与枚举名完全一致，使用大写）。默认包含 <strong>CLOSED</strong> 和 <strong>QUASI_CLOSED</strong>；若需对更多状态的容器进行负载均衡，请扩展此列表。所有已定义的容器状态包括：OPEN、CLOSING、QUASI_CLOSED、CLOSED、UNHEALTHY、INVALID、DELETED 和 RECOVERING。</td>
+      </tr>
+      <tr>
+          <td><code>hdds.datanode.disk.balancer.container.choosing.policy</code></td>
           <td><code>org.apache.hadoop.ozone.container.diskbalancer.policy.DefaultContainerChoosingPolicy</code></td>
           <td>用于选择源/目标卷以及要移动的容器的策略。</td>
       </tr>
@@ -722,7 +732,7 @@ s=d.getElementsByTagName('script')[0];
 <footer class="footer">
   <div class="container">
     <span class="small text-muted">
-      Version: 2.2.0-SNAPSHOT, Last Modified: March 17, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/020452e196bbd0de0d530f6b2291339bacc66213">020452e196</a>
+      Version: 2.2.0-SNAPSHOT, Last Modified: April 27, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/bf4515f16ca705b236ceeffd0b8e6643570e0889">bf4515f16c</a>
     </span>
   </div>
 </footer>

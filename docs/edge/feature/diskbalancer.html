@@ -771,6 +771,11 @@ is currently considered experimental and is disabled by default. The command is,
           <td>Stop automatically after disks are balanced (default: true). Used with <code>start</code> and <code>update</code> commands.</td>
           <td><code>-s false</code><br><code>--stop-after-disk-even true</code></td>
       </tr>
+      <tr>
+          <td><code>-c/--container-states</code></td>
+          <td>Comma-separated container lifecycle state names that may be moved between disks . Used with <code>start</code> and <code>update</code> commands.</td>
+          <td><code>-c CLOSED,QUASI_CLOSED</code><br><code>--container-states OPEN,CLOSED</code></td>
+      </tr>
   </tbody>
 </table>
 <h3 id="examples">Examples</h3>
@@ -877,6 +882,11 @@ is currently considered experimental and is disabled by default. The command is,
           <td>The delay after a container is successfully moved from source volume to destination volume before the source container replica is deleted. This lazy deletion provides a grace period before failing the read thread holding the old container replica. Unit: ns, ms, s, m, h, d.</td>
       </tr>
       <tr>
+          <td><code>hdds.datanode.disk.balancer.container.states</code></td>
+          <td><code>CLOSED,QUASI_CLOSED</code></td>
+          <td>Comma-separated container lifecycle state names that may be moved between disks (must match enum names exactly, uppercase). Default includes <strong>CLOSED</strong> and <strong>QUASI_CLOSED</strong>; extend the list when additional states are needed to be balanced. All defined container states are OPEN, CLOSING, QUASI_CLOSED, CLOSED, UNHEALTHY, INVALID, DELETED, RECOVERING.</td>
+      </tr>
+      <tr>
           <td><code>hdds.datanode.disk.balancer.container.choosing.policy</code></td>
           <td><code>org.apache.hadoop.ozone.container.diskbalancer.policy.DefaultContainerChoosingPolicy</code></td>
           <td>The policy for selecting source/destination volumes and which containers to move.</td>
@@ -912,7 +922,7 @@ is currently considered experimental and is disabled by default. The command is,
 <footer class="footer">
   <div class="container">
     <span class="small text-muted">
-      Version: 2.2.0-SNAPSHOT, Last Modified: March 17, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/020452e196bbd0de0d530f6b2291339bacc66213">020452e196</a>
+      Version: 2.2.0-SNAPSHOT, Last Modified: April 27, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/bf4515f16ca705b236ceeffd0b8e6643570e0889">bf4515f16c</a>
     </span>
   </div>
 </footer>

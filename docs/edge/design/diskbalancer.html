@@ -704,7 +704,8 @@ atomically moved to the <strong>final destination</strong> directory of D2 as <c
        (1)
         |
 D2      ----&gt; Temp C1-CLOSED  --- (2) ---&gt; Temp C1-RECOVERING --- (3) ---&gt; C1-RECOVERING --- (4) ---&gt; C1-CLOSED
-</code></pre><h3 id="lazy-deletion-of-source-container-replica">Lazy Deletion of Source Container Replica</h3>
+</code></pre><p><strong>Note:</strong> By default, <code>hdds.datanode.disk.balancer.container.states</code> includes <strong>CLOSED</strong> and <strong>QUASI_CLOSED</strong>. The same move process applies for any state listed there.</p>
+<h3 id="lazy-deletion-of-source-container-replica">Lazy Deletion of Source Container Replica</h3>
 <p>The source container on D1 is <strong>not</strong> deleted immediately after the move completes. Instead, it is scheduled for deletion after a configurable delay using config <code>hdds.datanode.disk.balancer.replica.deletion.delay</code>, <strong>default: 5 minutes</strong>.</p>
 <p><strong>Rationale:</strong> When a container has only one replica and that replica has an in-flight read operation, the read thread may still hold a reference to the old container at the source path.
 If the DiskBalancer deletes the old container immediately after the move, the in-flight read would fail because the container data is now at the new path. The lazy deletion provides a
@@ -718,7 +719,7 @@ are configurable, but the default implementations provide robust and safe behavi
 <li><strong><code>DefaultContainerChoosingPolicy</code></strong>: This is the default policy that consolidates both volume selection and container
 selection into a single operation. It identifies the most over-utilized volume as the source and the most under-utilized
 volume with sufficient space as the destination, then iterates through containers on the source to pick the first one
-that is in a <strong>CLOSED</strong> state and is not already being moved. It caches the list of containers for each volume which auto expires after one hour.</li>
+that is movable (per <code>hdds.datanode.disk.balancer.container.states</code>, default <strong>CLOSED</strong> and <strong>QUASI_CLOSED</strong>) and is not already being moved. It caches the list of containers for each volume which auto expires after one hour.</li>
 </ul>
 <h2 id="security-design">Security Design</h2>
 <p>DiskBalancer follows the same security model as other services:</p>
@@ -818,7 +819,7 @@ into the balancer&rsquo;s activity, progress, and overall health.</p>
 <footer class="footer">
   <div class="container">
     <span class="small text-muted">
-      Version: 2.2.0-SNAPSHOT, Last Modified: March 17, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/020452e196bbd0de0d530f6b2291339bacc66213">020452e196</a>
+      Version: 2.2.0-SNAPSHOT, Last Modified: April 27, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/bf4515f16ca705b236ceeffd0b8e6643570e0889">bf4515f16c</a>
     </span>
   </div>
 </footer>
