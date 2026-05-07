@@ -961,7 +961,7 @@ before opening the key.</li>
 
     User-&gt;&gt;GW: PUT object with If-None-Match:* or If-Match:etag
     alt If-None-Match: *
-        GW-&gt;&gt;OM: createKey(expectedDataGeneration = -1)
+        GW-&gt;&gt;OM: createKey(expectedDataGeneration = 0)
         OM-&gt;&gt;OM: Reject if key already exists
         OM--&gt;&gt;GW: Open key or KEY_ALREADY_EXISTS
         opt Open key created
@@ -1581,7 +1581,7 @@ mapping must stay conditional on the absence of <code>If-Match</code>; otherwise
 <footer class="footer">
   <div class="container">
     <span class="small text-muted">
-      Version: 2.2.0-SNAPSHOT, Last Modified: April 26, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/e0e821f631093bb7428633bb88ebeaa5d3a56985">e0e821f631</a>
+      Version: 2.2.0-SNAPSHOT, Last Modified: May 6, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/aa76a5dc93623e770a5b8722ec472853024da420">aa76a5dc93</a>
     </span>
   </div>
 </footer>
