@@ -650,14 +650,15 @@ s=d.getElementsByTagName('script')[0];
 <p>Note: Snapshot Defragmentation was previously called Snapshot Compaction earlier during the design phase. It is not RocksDB compaction. Thus the rename to avoid such confusion. We are also not going to enable RocksDB auto compaction on snapshot RocksDBs.</p>
 <ol>
 <li>
-<h3 id="introducing-last-defragmentation-time">Introducing last defragmentation time</h3>
+<h3 id="snapshot-local-yaml-metadata">Snapshot local YAML metadata</h3>
 <p>The implemented metadata is stored in local <code>OmSnapshotLocalData</code> YAML files,
 not in Ratis-replicated <code>SnapshotInfo</code>. The YAML is created on every snapshot
 creation even when the periodic defrag service is disabled.</p>
 <p>The important YAML fields are <code>snapshotId</code>, <code>previousSnapshotId</code>, <code>version</code>,
 <code>needsDefrag</code>, <code>versionSstFileInfos</code>, <code>dbTxSequenceNumber</code>,
 <code>transactionInfo</code>, <code>lastDefragTime</code>, <code>checksum</code>, and <code>isSSTFiltered</code>.
-<code>lastDefragTime</code> is serialized, but current defrag decisions are based on
+<code>lastDefragTime</code> records the local wall-clock time when a new defragged
+snapshot version is committed. Current defrag decisions are still based on
 <code>version</code>, <code>needsDefrag</code>, and <code>versionSstFileInfos</code>.</p>
 <p>The earlier proposal&rsquo;s <code>notDefraggedSstFileList</code> and <code>defraggedSstFileList</code>
 became <code>versionSstFileInfos</code>, a map from local snapshot version to
@@ -888,7 +889,7 @@ flushed to the OM DB and no versions remain.</p>
 <footer class="footer">
   <div class="container">
     <span class="small text-muted">
-      Version: 2.2.0-SNAPSHOT, Last Modified: April 28, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/83abee4d71c1dfc69902833e345ab61e6103791d">83abee4d71</a>
+      Version: 2.2.0-SNAPSHOT, Last Modified: May 9, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/ea66b70462c09d029ca9427e04e615d001607bf2">ea66b70462</a>
     </span>
   </div>
 </footer>
