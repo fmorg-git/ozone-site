@@ -754,6 +754,157 @@ as default value is increased to 20GB which will consider most of the use case.<
 <ol start="2">
 <li>Min Space will be 20GB as default</li>
 </ol>
+<hr>
+<h1 id="soft-and-hard-min-free-space-limits">Soft and Hard Min-Free-Space Limits</h1>
+<h2 id="overview">Overview</h2>
+<p>The min-free-space value chosen above is split into two distinct thresholds that serve different purposes:
+a <strong>soft</strong> (reported) limit and a <strong>hard</strong> (locally-enforced) limit. The gap between them is the
+<em>soft band</em> — a warning zone where writes are still accepted but the Datanode is already signalling
+to SCM that it is running low.</p>
+<h2 id="configuration">Configuration</h2>
+<table>
+  <thead>
+      <tr>
+          <th>Key</th>
+          <th>Default</th>
+          <th>Purpose</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>hdds.datanode.volume.min.free.space</code></td>
+          <td><code>20GB</code></td>
+          <td>Absolute floor shared by both tiers. Effective spare = <code>max(this, capacity × ratio)</code>.</td>
+      </tr>
+      <tr>
+          <td><code>hdds.datanode.volume.min.free.space.percent</code></td>
+          <td><code>2%</code></td>
+          <td><strong>Soft limit ratio</strong> — reported to SCM via <code>freeSpaceToSpare</code> in storage heartbeats.</td>
+      </tr>
+      <tr>
+          <td><code>hdds.datanode.volume.min.free.space.hard.limit.percent</code></td>
+          <td><code>1.5%</code></td>
+          <td><strong>Hard limit ratio</strong> — enforced locally for write rejection and new container placement.</td>
+      </tr>
+  </tbody>
+</table>
+<p>Rules:</p>
+<ul>
+<li><code>hard.limit.percent</code> must be ≤ <code>min.free.space.percent</code>. If it is set higher, it is silently
+clamped down to the soft ratio, making the soft band width zero (effectively disabling it).</li>
+<li>Setting both ratios to the same value disables the soft band entirely — behaviour is then identical
+to the pre-split single-threshold code.</li>
+</ul>
+<h3 id="effective-spare-values-for-a-2-tb-volume">Effective spare values for a 2 TB volume</h3>
+<table>
+  <thead>
+      <tr>
+          <th>Threshold</th>
+          <th>Calculation</th>
+          <th>Result</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Soft (reported)</td>
+          <td><code>max(20 GB, 2 TB × 2%)</code></td>
+          <td><strong>40 GB</strong></td>
+      </tr>
+      <tr>
+          <td>Hard (local)</td>
+          <td><code>max(20 GB, 2 TB × 1.5%)</code></td>
+          <td><strong>30 GB</strong></td>
+      </tr>
+      <tr>
+          <td>Soft band width</td>
+          <td><code>40 GB − 30 GB</code></td>
+          <td><strong>10 GB</strong></td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="how-each-limit-is-used">How Each Limit Is Used</h2>
+<h3 id="hard-limit--local-write-enforcement-and-new-container-placement">Hard limit — local write enforcement and new container placement</h3>
+<p><code>getFreeSpaceToSpare(capacity)</code> returns the hard spare. It is checked in two places:</p>
+<ol>
+<li>
+<p><strong>Write rejection</strong> (<code>ContainerUtils.assertSpaceAvailability</code>): a write is rejected with
+<code>DISK_OUT_OF_SPACE</code> when <code>available − hardSpare &lt; requestedBytes</code>. This is the definitive gate
+that prevents disk exhaustion.</p>
+</li>
+<li>
+<p><strong>New container placement</strong> (<code>AvailableSpaceFilter</code>, <code>PendingContainerTracker</code>): SCM only
+schedules a new container on a volume when <code>available − committed − hardSpare &gt; maxContainerSize</code>.
+This ensures that containers are placed only where writes will actually succeed.</p>
+</li>
+</ol>
+<h3 id="soft-limit--scm-visibility-and-proactive-close-container-actions">Soft limit — SCM visibility and proactive close-container actions</h3>
+<p><code>getReportedFreeSpaceToSpare(capacity)</code> returns the soft spare. It appears in two places:</p>
+<ol>
+<li>
+<p><strong>Storage heartbeat</strong> (<code>HddsVolume.reportBuilder</code>): each storage report sent from the Datanode to
+SCM carries <code>freeSpaceToSpare = softSpare</code>. SCM uses this value to gauge how much usable space
+remains on the volume when making placement decisions for new pipelines and replication.</p>
+</li>
+<li>
+<p><strong>Soft-band metric</strong> (<code>ContainerUtils.assertSpaceAvailability</code>, <code>AvailableSpaceFilter</code>):
+when a write (or container placement attempt) succeeds the hard check but <code>available − softSpare</code>
+is below the required size, the Datanode increments
+<code>numWriteRequestsInSoftBandMinFreeSpace</code> (for writes) or
+<code>numContainerCreateRequestsInSoftBandMinFreeSpace</code> (for container placement). These metrics
+alert operators that the volume is inside the warning zone.</p>
+</li>
+</ol>
+<h2 id="the-soft-band-improving-write-continuity-near-capacity-limits">The Soft Band: Improving Write Continuity Near Capacity Limits</h2>
+<p>Without a soft band, a single threshold would have to serve two conflicting goals:</p>
+<ul>
+<li><strong>High enough</strong> to give SCM enough lead time to stop routing work to a nearly-full node.</li>
+<li><strong>Low enough</strong> to maximise usable disk space and avoid premature write rejection.</li>
+</ul>
+<p>Splitting the threshold resolves the conflict:</p>
+<pre tabindex="0"><code>  Disk capacity
+  ─────────────────────────────────────────────────────────────────
+  usable data space (writes accepted here)
+  ─────────────────────────────────────────── ← hard spare (30 GB)
+  soft band (10 GB warning zone):
+    writes still accepted, but DN metrics fire and SCM starts
+    steering new work away from this volume
+  ─────────────────────────────────────────── ← soft spare (40 GB)
+  reserved buffer (SCM sees this as &#34;full&#34;)
+  ─────────────────────────────────────────────────────────────────
+</code></pre><p><strong>What happens as a volume fills up:</strong></p>
+<ol>
+<li>
+<p><strong>Above soft spare (&gt; 40 GB free):</strong> Normal operation.</p>
+</li>
+<li>
+<p><strong>Inside the soft band (30 – 40 GB free):</strong> Writes to existing open containers still succeed.
+The <code>InSoftBand</code> metrics increment, and because SCM already sees <code>freeSpaceToSpare = 40 GB</code> via
+the heartbeat, it stops preferring this volume for new pipelines. The Datanode may send
+close-container actions (see <a href="../design/full-volume-handling.html">Full Volume Handling</a>) to speed up
+migration.</p>
+</li>
+<li>
+<p><strong>Below hard spare (&lt; 30 GB free):</strong> Writes are rejected. The <code>RejectedHardMinFreeSpace</code> metrics
+increment. No new containers are placed on this volume by SCM.</p>
+</li>
+</ol>
+<p><strong>Why this improves write continuity:</strong> without the band, SCM would only learn a volume is nearly
+full when write rejections start happening. With the band, SCM gets advance warning via a smaller
+reported <code>freeSpaceToSpare</code> and can route new containers to other volumes <em>before</em> the hard limit is
+hit, reducing client-visible write failures.</p>
+<h2 id="turning-off-the-soft-band">Turning Off the Soft Band</h2>
+<p>To disable the soft band (equivalent to single-threshold behaviour), set the two ratios to the same
+value:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span><span style="color:#f92672">&lt;property&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;name&gt;</span>hdds.datanode.volume.min.free.space.percent<span style="color:#f92672">&lt;/name&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;value&gt;</span>0.02<span style="color:#f92672">&lt;/value&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/property&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;property&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;name&gt;</span>hdds.datanode.volume.min.free.space.hard.limit.percent<span style="color:#f92672">&lt;/name&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;value&gt;</span>0.02<span style="color:#f92672">&lt;/value&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/property&gt;</span>
+</span></span></code></pre></div><p>When both ratios are equal, <code>softSpare == hardSpare</code>, the soft band width is zero, and the
+<code>InSoftBand</code> metrics never fire.</p>
 
             </div>
 
@@ -766,7 +917,7 @@ as default value is increased to 20GB which will consider most of the use case.<
 <footer class="footer">
   <div class="container">
     <span class="small text-muted">
-      Version: 2.2.0-SNAPSHOT, Last Modified: May 28, 2025 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/b8b226c3c85edef881c11d03b88b9157199e86fa">b8b226c3c8</a>
+      Version: 2.2.0-SNAPSHOT, Last Modified: May 13, 2026 <a class="hide-child link primary-color" href="https://github.com/apache/ozone/commit/c689b1489897df0d5a83194cf9c0048df71c7531">c689b14898</a>
     </span>
   </div>
 </footer>
